@@ -1,0 +1,75 @@
+{
+  "run_id": "FD001-lightgbm_window50-20261122T145347",
+  "created_utc": "2026-11-22T15:03:51+00:00",
+  "subset": "FD001",
+  "name": "lightgbm_window50",
+  "model": "lgbm",
+  "config": {
+    "features": "all",
+    "cap": 125,
+    "window": 50,
+    "cycle": false,
+    "test": false,
+    "name": "lightgbm_window50",
+    "model": "lgbm"
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD001_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 7.464024558183105,
+      "std": 0.12958180686422105
+    },
+    "all_rmse": {
+      "mean": 10.680400123125645,
+      "std": 0.17067308409375945
+    },
+    "late_mae": {
+      "mean": 4.441653743228226,
+      "std": 0.44365031414626516
+    },
+    "late_rmse": {
+      "mean": 6.252805760424428,
+      "std": 0.6599469978087622
+    },
+    "cut_mae": {
+      "mean": 11.518249062644871,
+      "std": 0.49913274314610717
+    },
+    "cut_rmse": {
+      "mean": 15.124134303742665,
+      "std": 0.6573518158534807
+    },
+    "cut_score_per_point": {
+      "mean": 3.6712393340604805,
+      "std": 0.5329980396616115
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 2.7571570000145584,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "hardware": {
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines."
+}

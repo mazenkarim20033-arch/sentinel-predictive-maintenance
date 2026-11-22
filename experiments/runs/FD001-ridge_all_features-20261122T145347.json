@@ -1,0 +1,75 @@
+{
+  "run_id": "FD001-ridge_all_features-20261122T145347",
+  "created_utc": "2026-11-22T15:02:32+00:00",
+  "subset": "FD001",
+  "name": "ridge_all_features",
+  "model": "ridge",
+  "config": {
+    "features": "all",
+    "cap": 125,
+    "window": 30,
+    "cycle": false,
+    "test": false,
+    "name": "ridge_all_features",
+    "model": "ridge"
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD001_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 14.896343421936034,
+      "std": 0.7853877496494618
+    },
+    "all_rmse": {
+      "mean": 19.104597091674805,
+      "std": 0.8876589717189394
+    },
+    "late_mae": {
+      "mean": 15.001626968383789,
+      "std": 1.688974687097659
+    },
+    "late_rmse": {
+      "mean": 18.98649787902832,
+      "std": 1.634904572867786
+    },
+    "cut_mae": {
+      "mean": 18.641316604614257,
+      "std": 1.5134029792018555
+    },
+    "cut_rmse": {
+      "mean": 22.63821487426758,
+      "std": 1.6248809111925633
+    },
+    "cut_score_per_point": {
+      "mean": 10.939916139129854,
+      "std": 3.181506286568135
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 0.03170798001810908,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "hardware": {
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines."
+}

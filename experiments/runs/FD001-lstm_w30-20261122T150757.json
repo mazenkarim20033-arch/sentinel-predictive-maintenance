@@ -1,0 +1,125 @@
+{
+  "run_id": "FD001-lstm_w30-20261122T150757",
+  "created_utc": "2026-11-22T15:38:12+00:00",
+  "subset": "FD001",
+  "name": "lstm_w30",
+  "model": "lstm",
+  "config": {
+    "name": "lstm_w30",
+    "kind": "lstm",
+    "window": 30,
+    "cap": 125,
+    "hidden": 64,
+    "layers": 2,
+    "dropout": 0.2,
+    "lr": 0.001,
+    "weight_decay": 0.00001,
+    "batch_size": 256,
+    "max_epochs": 40,
+    "patience": 6,
+    "val_engine_fraction": 0.15,
+    "features": "raw sequence + mask channel",
+    "test": true
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD001_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 9.394662857055664,
+      "std": 0.738787653156913
+    },
+    "all_rmse": {
+      "mean": 13.754033279418945,
+      "std": 0.7282897271529648
+    },
+    "late_mae": {
+      "mean": 5.973341560363769,
+      "std": 0.41533928631671757
+    },
+    "late_rmse": {
+      "mean": 8.308925819396972,
+      "std": 0.49739755686502185
+    },
+    "cut_mae": {
+      "mean": 14.0937650680542,
+      "std": 1.4120459930231617
+    },
+    "cut_rmse": {
+      "mean": 18.083302688598632,
+      "std": 1.761608129887422
+    },
+    "cut_score_per_point": {
+      "mean": 6.419436187044664,
+      "std": 1.8712841227044656
+    },
+    "cv_best_epochs": [
+      8,
+      6,
+      17,
+      7,
+      15
+    ]
+  },
+  "test_metrics": {
+    "rmse": {
+      "mean": 15.346284675598145,
+      "std": 0.4010920899503125
+    },
+    "mae": {
+      "mean": 11.445468330383301,
+      "std": 0.3678140350418993
+    },
+    "score": {
+      "mean": 413.5696357195271,
+      "std": 87.13461234330428
+    },
+    "rmse_ci95_seed_mean_prediction": [
+      12.435528588294982,
+      16.678038644790647
+    ],
+    "score_ci95_seed_mean_prediction": [
+      227.44241176919004,
+      476.7935620573228
+    ],
+    "n_test_engines": 100,
+    "best_epochs": [
+      12,
+      7,
+      7,
+      8,
+      11
+    ]
+  },
+  "train_seconds": 77.5566933399532,
+  "latency_single_ms": 0.8542999858036637,
+  "model_size_bytes": 229631,
+  "artifact_path": "artifacts\\FD001\\lstm_w30.pt",
+  "training_curve_path": "experiments\\curves\\FD001_lstm_w30_seed0.json",
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Early stopping on 15% held-out training engines; CV uses model seed 0; test = mean of 5 seeds trained on all training engines."
+}

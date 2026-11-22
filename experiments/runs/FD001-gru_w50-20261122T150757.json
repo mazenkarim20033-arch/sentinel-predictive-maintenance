@@ -1,0 +1,125 @@
+{
+  "run_id": "FD001-gru_w50-20261122T150757",
+  "created_utc": "2026-11-22T16:06:54+00:00",
+  "subset": "FD001",
+  "name": "gru_w50",
+  "model": "gru",
+  "config": {
+    "name": "gru_w50",
+    "kind": "gru",
+    "window": 50,
+    "cap": 125,
+    "hidden": 64,
+    "layers": 2,
+    "dropout": 0.2,
+    "lr": 0.001,
+    "weight_decay": 0.00001,
+    "batch_size": 256,
+    "max_epochs": 40,
+    "patience": 6,
+    "val_engine_fraction": 0.15,
+    "features": "raw sequence + mask channel",
+    "test": true
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD001_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 7.347991847991944,
+      "std": 0.5472703300445882
+    },
+    "all_rmse": {
+      "mean": 11.069315338134766,
+      "std": 0.534284497878761
+    },
+    "late_mae": {
+      "mean": 4.579254674911499,
+      "std": 0.5324954062361988
+    },
+    "late_rmse": {
+      "mean": 6.487613868713379,
+      "std": 0.7113106276750198
+    },
+    "cut_mae": {
+      "mean": 12.14986972808838,
+      "std": 1.233475641025468
+    },
+    "cut_rmse": {
+      "mean": 15.78470973968506,
+      "std": 1.3641845776230481
+    },
+    "cut_score_per_point": {
+      "mean": 4.394964995850003,
+      "std": 1.0372154368201
+    },
+    "cv_best_epochs": [
+      10,
+      7,
+      11,
+      11,
+      10
+    ]
+  },
+  "test_metrics": {
+    "rmse": {
+      "mean": 15.23359661102295,
+      "std": 0.3277439240647913
+    },
+    "mae": {
+      "mean": 11.145952224731445,
+      "std": 0.3108760119530897
+    },
+    "score": {
+      "mean": 478.86284748119544,
+      "std": 122.36064463756152
+    },
+    "rmse_ci95_seed_mean_prediction": [
+      12.265807628631592,
+      16.978772020339964
+    ],
+    "score_ci95_seed_mean_prediction": [
+      218.5161378232234,
+      688.2720413837496
+    ],
+    "n_test_engines": 100,
+    "best_epochs": [
+      9,
+      10,
+      12,
+      16,
+      7
+    ]
+  },
+  "train_seconds": 194.63840255993418,
+  "latency_single_ms": 5.824250052683055,
+  "model_size_bytes": 175295,
+  "artifact_path": "artifacts\\FD001\\gru_w50.pt",
+  "training_curve_path": "experiments\\curves\\FD001_gru_w50_seed0.json",
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Early stopping on 15% held-out training engines; CV uses model seed 0; test = mean of 5 seeds trained on all training engines."
+}

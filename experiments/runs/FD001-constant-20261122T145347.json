@@ -1,0 +1,101 @@
+{
+  "run_id": "FD001-constant-20261122T145347",
+  "created_utc": "2026-11-22T14:53:49+00:00",
+  "subset": "FD001",
+  "name": "constant",
+  "model": "constant",
+  "config": {
+    "features": "all",
+    "cap": 125,
+    "window": 30,
+    "cycle": false,
+    "test": true,
+    "name": "constant",
+    "model": "constant"
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD001_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 36.96983566545513,
+      "std": 0.06217494718798885
+    },
+    "all_rmse": {
+      "mean": 41.68031719169102,
+      "std": 0.08503860999389194
+    },
+    "late_mae": {
+      "mean": 61.82790985107422,
+      "std": 0.22901063730234156
+    },
+    "late_rmse": {
+      "mean": 63.55595889767312,
+      "std": 0.22279517164898982
+    },
+    "cut_mae": {
+      "mean": 33.12665419006348,
+      "std": 1.4348515813674974
+    },
+    "cut_rmse": {
+      "mean": 38.993995169915465,
+      "std": 1.3754760469898228
+    },
+    "cut_score_per_point": {
+      "mean": 157.06562741468068,
+      "std": 22.738543583921658
+    }
+  },
+  "test_metrics": {
+    "rmse": {
+      "mean": 43.067035185872186,
+      "std": 0.0
+    },
+    "mae": {
+      "mean": 35.9,
+      "std": 0.0
+    },
+    "score": {
+      "mean": 33629.22618540669,
+      "std": 0.0
+    },
+    "rmse_ci95_seed_mean_prediction": [
+      38.59356050536758,
+      47.365224162824525
+    ],
+    "score_ci95_seed_mean_prediction": [
+      20969.252436996656,
+      47794.51499359044
+    ],
+    "n_test_engines": 100
+  },
+  "train_seconds": 0.00003001992590725422,
+  "latency_single_ms": 0.002400018274784088,
+  "model_size_bytes": 83,
+  "artifact_path": "artifacts\\FD001\\constant.joblib",
+  "hardware": {
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines."
+}
