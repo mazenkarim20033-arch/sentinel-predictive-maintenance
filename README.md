@@ -38,7 +38,9 @@ python -m venv .venv --system-site-packages
 
 Extract the NASA zip to `data/raw/extracted/`. Tests marked `realdata` skip automatically if the files are missing.
 
-## Implemented so far (Milestones 2–3)
+Machines are described by a `DatasetSpec` in `configs/` (asset id, time, signal and condition columns, regimes, label rule); the shared pipeline reads columns only from that spec. C-MAPSS is currently the only adapter; a second, non-engine dataset is the next step.
+
+## Implemented so far (Milestones 2–4.5 part 1)
 
 Loader with schema validation, RUL labels, engine-level splits, per-regime preprocessing fitted on training data only, causal windows, sensor and regime analysis (`reports/data_analysis/`), tabular features, metrics with bootstrap CIs, a file-based experiment registry, FD001 baselines, and 36 automated tests.
 

@@ -6,12 +6,12 @@ import pandas as pd
 
 
 def _lifetime_strata(train: pd.DataFrame, n_bins: int = 4) -> pd.Series:
-    life = train.groupby("engine")["cycle"].max()
+    life = train.groupby("asset")["time"].max()
     return pd.qcut(life.rank(method="first"), q=n_bins, labels=False)
 
 
-def split_engines(train: pd.DataFrame, val_fraction: float = 0.2, seed: int = 0) -> dict[str, list[int]]:
-    """Engine-level split stratified by lifetime quartile; no engine appears in both sides."""
+def split_assets(train: pd.DataFrame, val_fraction: float = 0.2, seed: int = 0) -> dict[str, list[int]]:
+    """Engine-level split stratified by lifetime quartile; no asset appears in both sides."""
     if not 0 < val_fraction < 1:
         raise ValueError("val_fraction must be in (0, 1)")
     rng = np.random.default_rng(seed)
@@ -26,7 +26,7 @@ def split_engines(train: pd.DataFrame, val_fraction: float = 0.2, seed: int = 0)
     return {"train": sorted(tr), "val": sorted(int(e) for e in val), "seed": seed}
 
 
-def grouped_kfold_engines(train: pd.DataFrame, n_splits: int = 5, seed: int = 0) -> list[dict[str, list[int]]]:
+def grouped_kfold_assets(train: pd.DataFrame, n_splits: int = 5, seed: int = 0) -> list[dict[str, list[int]]]:
     rng = np.random.default_rng(seed)
     strata = _lifetime_strata(train)
     folds: list[list[int]] = [[] for _ in range(n_splits)]
@@ -42,8 +42,8 @@ def grouped_kfold_engines(train: pd.DataFrame, n_splits: int = 5, seed: int = 0)
     ]
 
 
-def select_engines(df: pd.DataFrame, engines: list[int]) -> pd.DataFrame:
-    return df[df["engine"].isin(engines)].reset_index(drop=True)
+def select_assets(df: pd.DataFrame, assets: list[int]) -> pd.DataFrame:
+    return df[df["asset"].isin(assets)].reset_index(drop=True)
 
 
 def save_split(split: dict, path: str | Path) -> None:

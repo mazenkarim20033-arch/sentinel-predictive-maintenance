@@ -17,16 +17,17 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from sentinel.data.labels import add_train_rul  # noqa: E402
-from sentinel.data.loader import SENSOR_COLS, SETTING_COLS, SUBSETS, load_subset  # noqa: E402
+from sentinel.data.loader import SUBSETS, load_dataset  # noqa: E402
 from sentinel.features.preprocess import Preprocessor, PreprocessConfig  # noqa: E402
+from sentinel.spec import CONFIGS_DIR, load_spec  # noqa: E402
 
 RAW = ROOT / "data" / "raw" / "extracted"
 OUT = ROOT / "reports" / "data_analysis"
 OUT.mkdir(parents=True, exist_ok=True)
 
 
-def regime_scan(train: pd.DataFrame) -> dict[int, float]:
-    x = StandardScaler().fit_transform(train[SETTING_COLS])
+def regime_scan(train: pd.DataFrame, conditions: list[str]) -> dict[int, float]:
+    x = StandardScaler().fit_transform(train[conditions])
     sample = x[np.random.default_rng(0).choice(len(x), size=min(8000, len(x)), replace=False)]
     scores = {}
     for k in range(2, 9):
@@ -38,24 +39,25 @@ def regime_scan(train: pd.DataFrame) -> dict[int, float]:
 def main() -> None:
     summary = []
     for name in SUBSETS:
-        data = load_subset(RAW, name)
+        spec = load_spec(CONFIGS_DIR / f"cmapss_{name}.yaml")
+        data = load_dataset(spec, RAW)
         train = add_train_rul(data.train, cap=125)
-        scan = regime_scan(train)
+        scan = regime_scan(train, spec.conditions)
         best_k = max(scan, key=scan.get)
         k = best_k if scan[best_k] > 0.6 else 1
-        pre = Preprocessor(PreprocessConfig(n_regimes=k)).fit(train)
+        pre = Preprocessor(PreprocessConfig.from_spec(spec, n_regimes=k)).fit(train)
         z = pre.transform(train)
         z["rul"] = train["rul"].to_numpy()
         rows = []
-        for s in SENSOR_COLS:
+        for s in spec.signals:
             raw_std = float(train[s].std(ddof=0))
-            if s in pre.sensors_:
+            if s in pre.signals_:
                 rho = spearmanr(z[s], z["rul"]).statistic
                 late = z[train["rul"].to_numpy() <= 50][s].mean() - z[train["rul"].to_numpy() >= 150][s].mean()
             else:
                 rho, late = np.nan, np.nan
             rows.append(
-                {"sensor": s, "raw_std": raw_std, "kept": s in pre.sensors_,
+                {"sensor": s, "raw_std": raw_std, "kept": s in pre.signals_,
                  "spearman_vs_rul": rho, "late_minus_early_z": late}
             )
         table = pd.DataFrame(rows)
@@ -63,15 +65,15 @@ def main() -> None:
         top = table[table.kept].reindex(table[table.kept].spearman_vs_rul.abs().sort_values(ascending=False).index)
         summary.append(
             {"subset": name, "silhouette_by_k": {k_: round(v, 3) for k_, v in scan.items()},
-             "chosen_regimes": k, "kept_sensors": len(pre.sensors_),
-             "dropped": [s for s in SENSOR_COLS if s not in pre.sensors_],
+             "chosen_regimes": k, "kept_sensors": len(pre.signals_),
+             "dropped": [s for s in spec.signals if s not in pre.signals_],
              "top5_abs_spearman": top.head(5)[["sensor", "spearman_vs_rul"]].round(2).values.tolist()}
         )
         fig, ax = plt.subplots(figsize=(7, 3.5))
         for s in top.head(4).sensor:
             mean_by_rul = z.assign(r=train["rul"].clip(upper=250)).groupby("r")[s].mean()
             ax.plot(mean_by_rul.index[::-1], mean_by_rul.values[::-1], label=s)
-        ax.set_xlabel("cycles to failure (training engines, regime-normalised)")
+        ax.set_xlabel("steps to failure (training assets, regime-normalised)")
         ax.set_ylabel("mean z-score")
         ax.set_title(f"{name}: strongest RUL-correlated sensors (training data)")
         ax.invert_xaxis()

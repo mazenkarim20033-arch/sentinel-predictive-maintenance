@@ -3,65 +3,81 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from sentinel.data.loader import SENSOR_COLS, SETTING_COLS
+from sentinel.spec import DatasetSpec
 
 
 class PreprocessConfig(BaseModel):
+    signals: list[str] = Field(min_length=1)
+    conditions: list[str] = []
     n_regimes: int = Field(1, ge=1)
     seed: int = 0
     min_std: float = Field(1e-8, gt=0)
 
+    @model_validator(mode="after")
+    def _regimes_need_conditions(self) -> "PreprocessConfig":
+        if self.n_regimes > 1 and not self.conditions:
+            raise ValueError("n_regimes > 1 needs condition columns")
+        return self
+
+    @classmethod
+    def from_spec(cls, spec: DatasetSpec, n_regimes: int | None = None) -> "PreprocessConfig":
+        return cls(
+            signals=spec.signals,
+            conditions=spec.conditions,
+            n_regimes=spec.n_regimes if n_regimes is None else n_regimes,
+        )
+
 
 class Preprocessor:
-    """Per-regime z-scoring of sensors. Every statistic comes from `fit` data only and
-    `transform` works row by row, so it cannot leak information from later cycles."""
+    """Per-regime z-scoring of signals. Every statistic comes from `fit` data only and
+    `transform` works row by row, so it cannot leak information from later steps."""
 
-    def __init__(self, config: PreprocessConfig | None = None):
-        self.config = config or PreprocessConfig()
-        self.sensors_: list[str] | None = None
+    def __init__(self, config: PreprocessConfig):
+        self.config = config
+        self.signals_: list[str] | None = None
 
     def fit(self, train: pd.DataFrame) -> "Preprocessor":
         cfg = self.config
         if cfg.n_regimes > 1:
-            self.setting_scaler_ = StandardScaler().fit(train[SETTING_COLS])
+            self.condition_scaler_ = StandardScaler().fit(train[cfg.conditions])
             self.kmeans_ = KMeans(n_clusters=cfg.n_regimes, n_init=10, random_state=cfg.seed).fit(
-                self.setting_scaler_.transform(train[SETTING_COLS])
+                self.condition_scaler_.transform(train[cfg.conditions])
             )
         regimes = self._regimes(train)
-        raw = train[SENSOR_COLS]
+        raw = train[cfg.signals]
         self.means_ = raw.groupby(regimes).mean()
         self.stds_ = raw.groupby(regimes).std(ddof=0)
         informative = (self.stds_ > cfg.min_std).any(axis=0)
-        self.sensors_ = [s for s in SENSOR_COLS if informative[s]]
+        self.signals_ = [s for s in cfg.signals if informative[s]]
         self.stds_ = self.stds_.where(self.stds_ > cfg.min_std, 1.0)
         return self
 
     def _regimes(self, df: pd.DataFrame) -> np.ndarray:
         if self.config.n_regimes == 1:
             return np.zeros(len(df), dtype=int)
-        return self.kmeans_.predict(self.setting_scaler_.transform(df[SETTING_COLS]))
+        return self.kmeans_.predict(self.condition_scaler_.transform(df[self.config.conditions]))
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.sensors_ is None:
+        if self.signals_ is None:
             raise RuntimeError("Preprocessor is not fitted")
         regimes = self._regimes(df)
-        mean = self.means_.loc[regimes, self.sensors_].to_numpy()
-        std = self.stds_.loc[regimes, self.sensors_].to_numpy()
-        z = (df[self.sensors_].to_numpy() - mean) / std
-        out = df[["engine", "cycle"]].copy()
-        out[self.sensors_] = z
+        mean = self.means_.loc[regimes, self.signals_].to_numpy()
+        std = self.stds_.loc[regimes, self.signals_].to_numpy()
+        z = (df[self.signals_].to_numpy() - mean) / std
+        out = df[["asset", "time"]].copy()
+        out[self.signals_] = z
         out["regime"] = regimes
         return out.reset_index(drop=True)
 
     @property
     def feature_cols(self) -> list[str]:
-        if self.sensors_ is None:
+        if self.signals_ is None:
             raise RuntimeError("Preprocessor is not fitted")
-        return list(self.sensors_)
+        return list(self.signals_)
 
     def save(self, path: str | Path) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)

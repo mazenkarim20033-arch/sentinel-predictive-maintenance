@@ -20,7 +20,7 @@ def main() -> None:
     for ax, f in zip(axes[0], files):
         h = json.loads(f.read_text())
         ax.plot([e["epoch"] for e in h], [e["train_loss"] for e in h], label="train")
-        ax.plot([e["epoch"] for e in h], [e["val_loss"] for e in h], label="held-out engines")
+        ax.plot([e["epoch"] for e in h], [e["val_loss"] for e in h], label="held-out assets")
         ax.set_title(f.stem.replace(f"{args.subset}_", "").replace("_seed0", ""))
         ax.set_xlabel("epoch")
         ax.set_yscale("log")

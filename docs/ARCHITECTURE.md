@@ -48,6 +48,8 @@ A `DatasetSpec` (Pydantic, YAML) describes any dataset:
 
 Pipeline stages read only the spec: loader/validator -> label builder -> regime detection (skipped if no conditions) -> per-regime normalisation -> windows -> models -> evaluation. Models never see column names, only arrays.
 
+**Implemented (Milestone 4.5, part 1):** `src/sentinel/spec.py` (`DatasetSpec`), YAML specs in `configs/cmapss_FD00X.yaml`, a spec-driven loader/validator (`load_dataset`, adapter registry with one adapter so far: `cmapss`), a spec-driven `Preprocessor`, and generic canonical column names `asset` and `time`. Shared code no longer references engines, cycles or the 21 NASA sensors. Re-running FD001 and FD004 through the new code reproduced every recorded CV and test metric exactly. Not yet implemented: a second adapter, threshold-based failure labels (needed for batteries), and feature extraction for raw waveforms. The `rul_cap` and `window` spec fields are defaults documented in the spec; the experiment scripts still declare their own values.
+
 What generality does and does not mean (to keep claims honest):
 
 1. The **pipeline and methodology** transfer. A **trained model does not**: each machine type needs its own training on its own data. There is no zero-shot "works on any machine".

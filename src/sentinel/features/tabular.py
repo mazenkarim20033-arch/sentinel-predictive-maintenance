@@ -4,7 +4,7 @@ import pandas as pd
 from sentinel.features.windows import Windows
 
 
-def tabular_features(win: Windows, feature_cols: list[str], include_cycle: bool = False) -> pd.DataFrame:
+def tabular_features(win: Windows, feature_cols: list[str], include_time: bool = False) -> pd.DataFrame:
     """Per-sensor last value, mean, std and slope over the real (unpadded) steps of a causal window."""
     X, mask = win.X, win.mask
     w = X.shape[1]
@@ -20,6 +20,6 @@ def tabular_features(win: Windows, feature_cols: list[str], include_cycle: bool 
     parts = {"last": last, "mean": mean, "std": std, "slope": slope}
     cols = {f"{s}_{k}": v[:, i] for k, v in parts.items() for i, s in enumerate(feature_cols)}
     out = pd.DataFrame(cols)
-    if include_cycle:
-        out["cycle"] = win.cycle.astype(np.float32)
+    if include_time:
+        out["time"] = win.time.astype(np.float32)
     return out

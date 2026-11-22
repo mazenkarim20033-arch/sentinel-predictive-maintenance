@@ -1,6 +1,6 @@
 """Baseline experiments on one C-MAPSS subset.
 
-Dev evaluation: grouped 5-fold CV over training engines (preprocessing refit inside every fold).
+Dev evaluation: grouped 5-fold CV over training assets (preprocessing refit inside every fold).
 Official test: evaluated once per final configuration (test=True), never for ablations.
 """
 import argparse
@@ -15,22 +15,22 @@ import numpy as np
 import pandas as pd
 
 from sentinel.data.labels import add_test_rul, add_train_rul
-from sentinel.data.loader import load_subset
-from sentinel.data.splits import grouped_kfold_engines, save_split, select_engines
+from sentinel.data.loader import load_dataset
+from sentinel.data.splits import grouped_kfold_assets, save_split, select_assets
 from sentinel.eval.metrics import bootstrap_ci, mae, nasa_score, rmse
 from sentinel.features.preprocess import Preprocessor, PreprocessConfig
 from sentinel.features.tabular import tabular_features
 from sentinel.features.windows import make_windows
 from sentinel.models.baselines import build_model
-from sentinel.registry.records import RunRecord, hardware_info, save_record
+from sentinel.registry.records import RUNS_DIR, RunRecord, hardware_info, save_record
+from sentinel.spec import CONFIGS_DIR, DatasetSpec, load_spec
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "extracted"
 EVAL_CAP = 125
 FINAL_SEEDS = [0, 1, 2, 3, 4]
-REGIMES = {"FD001": 1, "FD002": 6, "FD003": 1, "FD004": 6}
 
-BASE = dict(features="all", cap=125, window=30, cycle=False, test=False)
+BASE = dict(features="all", cap=125, window=30, use_time=False, test=False)
 CONFIGS = [
     {**BASE, "name": "constant", "model": "constant", "test": True},
     {**BASE, "name": "ridge_last", "model": "ridge", "features": "last", "test": True},
@@ -42,15 +42,19 @@ CONFIGS = [
     {**BASE, "name": "lightgbm_cap150", "model": "lgbm", "cap": 150},
     {**BASE, "name": "lightgbm_window15", "model": "lgbm", "window": 15},
     {**BASE, "name": "lightgbm_window50", "model": "lgbm", "window": 50, "test": True},
-    {**BASE, "name": "lightgbm_with_cycle", "model": "lgbm", "cycle": True},
+    {**BASE, "name": "lightgbm_with_time", "model": "lgbm", "use_time": True},
     {**BASE, "name": "lightgbm_global_norm", "model": "lgbm", "window": 50, "regimes": 1},
 ]
+
+
+def make_pre(spec: DatasetSpec, cfg: dict) -> Preprocessor:
+    return Preprocessor(PreprocessConfig.from_spec(spec, n_regimes=cfg["regimes"]))
 
 
 def build_xy(frame: pd.DataFrame, pre: Preprocessor, cfg: dict, last_only: bool = False):
     z = pre.transform(frame).assign(rul=frame["rul"].to_numpy())
     win = make_windows(z, pre.feature_cols, cfg["window"], "rul", last_only=last_only)
-    X = tabular_features(win, pre.feature_cols, include_cycle=cfg["cycle"])
+    X = tabular_features(win, pre.feature_cols, include_time=cfg["use_time"])
     if cfg["features"] == "last":
         X = X[[c for c in X.columns if c.endswith("_last")]]
     return X, win
@@ -66,10 +70,10 @@ def dev_metrics(pred: np.ndarray, win, rng: np.random.Generator) -> dict[str, fl
     out = {"all_mae": mae(p_c, t_c), "all_rmse": rmse(p_c, t_c)}
     late = true <= 50
     out["late_mae"], out["late_rmse"] = mae(p_c[late], t_c[late]), rmse(p_c[late], t_c[late])
-    eligible = (true >= 10) & (true <= 150) & (win.cycle >= 31)
+    eligible = (true >= 10) & (true <= 150) & (win.time >= 31)
     chosen = []
-    for engine in np.unique(win.engine[eligible]):
-        idx = np.where(eligible & (win.engine == engine))[0]
+    for asset in np.unique(win.asset[eligible]):
+        idx = np.where(eligible & (win.asset == asset))[0]
         chosen.extend(rng.choice(idx, size=min(10, len(idx)), replace=False))
     chosen = np.array(chosen)
     p_u = np.maximum(pred[chosen], 0)
@@ -83,11 +87,11 @@ def summarise(per_fold: list[dict]) -> dict:
     return {k: {"mean": float(np.mean([f[k] for f in per_fold])), "std": float(np.std([f[k] for f in per_fold]))} for k in keys}
 
 
-def run_cv(cfg: dict, train: pd.DataFrame, folds: list[dict]) -> tuple[dict, float]:
+def run_cv(cfg: dict, train: pd.DataFrame, folds: list[dict], spec: DatasetSpec) -> tuple[dict, float]:
     per_fold, fit_times = [], []
     for i, fold in enumerate(folds):
-        tr, va = select_engines(train, fold["train"]), select_engines(train, fold["val"])
-        pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(tr)
+        tr, va = select_assets(train, fold["train"]), select_assets(train, fold["val"])
+        pre = make_pre(spec, cfg).fit(tr)
         Xtr, wtr = build_xy(tr, pre, cfg)
         Xva, wva = build_xy(va, pre, cfg)
         t0 = time.perf_counter()
@@ -97,8 +101,8 @@ def run_cv(cfg: dict, train: pd.DataFrame, folds: list[dict]) -> tuple[dict, flo
     return summarise(per_fold), float(np.mean(fit_times))
 
 
-def run_test(cfg: dict, train: pd.DataFrame, test: pd.DataFrame, subset: str):
-    pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(train)
+def run_test(cfg: dict, train: pd.DataFrame, test: pd.DataFrame, subset: str, spec: DatasetSpec):
+    pre = make_pre(spec, cfg).fit(train)
     Xtr, wtr = build_xy(train, pre, cfg)
     Xte, wte = build_xy(test, pre, cfg, last_only=True)
     y_tr, truth = train_target(wtr.y, cfg["cap"]), wte.y
@@ -114,7 +118,7 @@ def run_test(cfg: dict, train: pd.DataFrame, test: pd.DataFrame, subset: str):
     metrics = {k: {"mean": float(np.mean([m[k] for m in per_seed])), "std": float(np.std([m[k] for m in per_seed]))} for k in per_seed[0]}
     metrics["rmse_ci95_seed_mean_prediction"] = bootstrap_ci(rmse, mean_pred, truth)
     metrics["score_ci95_seed_mean_prediction"] = bootstrap_ci(nasa_score, mean_pred, truth)
-    metrics["n_test_engines"] = int(len(truth))
+    metrics["n_test_assets"] = int(len(truth))
     row = Xte.iloc[[0]]
     lat = []
     for _ in range(30):
@@ -133,12 +137,14 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--subset", default="FD001")
     parser.add_argument("--only", nargs="*")
+    parser.add_argument("--runs-dir", type=Path, default=RUNS_DIR)
     args = parser.parse_args()
 
-    data = load_subset(RAW, args.subset)
+    spec = load_spec(CONFIGS_DIR / f"cmapss_{args.subset}.yaml")
+    data = load_dataset(spec, RAW)
     train = add_train_rul(data.train)
     test = add_test_rul(data.test, data.test_final_rul)
-    folds = grouped_kfold_engines(train, n_splits=5, seed=0)
+    folds = grouped_kfold_assets(train, n_splits=5, seed=0)
     save_split({"folds": folds}, ROOT / "experiments" / "splits" / f"{args.subset}_kfold5_seed0.json")
     hw = hardware_info()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
@@ -146,20 +152,20 @@ def main() -> None:
     for cfg in CONFIGS:
         if args.only and cfg["name"] not in args.only:
             continue
-        cfg = {**cfg, "regimes": cfg.get("regimes") or REGIMES[args.subset]}
-        cv, fit_s = run_cv(cfg, train, folds)
+        cfg = {**cfg, "regimes": cfg.get("regimes") or spec.n_regimes}
+        cv, fit_s = run_cv(cfg, train, folds, spec)
         record = RunRecord(
             run_id=f"{args.subset}-{cfg['name']}-{stamp}", subset=args.subset, name=cfg["name"], model=cfg["model"],
             config=cfg, split={"type": "grouped_kfold", "n_splits": 5, "seed": 0, "file": f"experiments/splits/{args.subset}_kfold5_seed0.json"},
-            preprocessing={"n_regimes": cfg["regimes"], "per_regime_zscore": True, "fit_scope": "fold train engines only"},
+            preprocessing={"n_regimes": cfg["regimes"], "per_regime_zscore": True, "fit_scope": "fold train assets only"},
             seeds=FINAL_SEEDS if cfg["test"] else [0], cv_metrics=cv, train_seconds=fit_s, hardware=hw,
-            notes="CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines.",
+            notes="CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train assets.",
         )
         if cfg["test"]:
-            m, fit_s, lat, size, art = run_test(cfg, train, test, args.subset)
+            m, fit_s, lat, size, art = run_test(cfg, train, test, args.subset, spec)
             record.test_metrics, record.train_seconds = m, fit_s
             record.latency_single_ms, record.model_size_bytes, record.artifact_path = lat, size, art
-        save_record(record)
+        save_record(record, args.runs_dir)
         t = record.test_metrics
         print(f"{cfg['name']:<22} cv cut_rmse {cv['cut_rmse']['mean']:.2f}±{cv['cut_rmse']['std']:.2f}"
               f" all_rmse {cv['all_rmse']['mean']:.2f}" + (f" | TEST rmse {t['rmse']['mean']:.2f} score {t['score']['mean']:.0f}" if t else ""), flush=True)

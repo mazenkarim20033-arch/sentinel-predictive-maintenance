@@ -20,7 +20,7 @@ class SeqConfig(BaseModel):
     batch_size: int = 256
     max_epochs: int = 40
     patience: int = 6
-    val_engine_fraction: float = 0.15
+    val_asset_fraction: float = 0.15
 
 
 class SeqNet(nn.Module):
@@ -40,20 +40,20 @@ def _inputs(X: np.ndarray, mask: np.ndarray) -> torch.Tensor:
 
 
 class SequenceRegressor:
-    """GRU/LSTM on causal windows. Early stopping uses a held-out slice of the *training engines*."""
+    """GRU/LSTM on causal windows. Early stopping uses a held-out slice of the *training assets*."""
 
     def __init__(self, config: SeqConfig | None = None):
         self.config = config or SeqConfig()
         torch.set_num_threads(2)
 
-    def fit(self, X, mask, y, engine, seed: int = 0) -> "SequenceRegressor":
+    def fit(self, X, mask, y, asset, seed: int = 0) -> "SequenceRegressor":
         cfg = self.config
         torch.manual_seed(seed)
         rng = np.random.default_rng(seed)
-        engines = np.unique(engine)
-        rng.shuffle(engines)
-        val_e = engines[: max(1, round(cfg.val_engine_fraction * len(engines)))]
-        is_val = np.isin(engine, val_e)
+        assets = np.unique(asset)
+        rng.shuffle(assets)
+        val_e = assets[: max(1, round(cfg.val_asset_fraction * len(assets)))]
+        is_val = np.isin(asset, val_e)
         inp, tgt = _inputs(X, mask), torch.from_numpy(np.asarray(y, dtype=np.float32) / TARGET_SCALE)
         tr_idx, va_idx = np.where(~is_val)[0], np.where(is_val)[0]
         self.net_ = SeqNet(cfg.kind, inp.shape[2], cfg.hidden, cfg.layers, cfg.dropout)

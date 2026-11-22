@@ -2,7 +2,7 @@
 
 ## Final configurations: dev CV and official test (each evaluated once on test)
 
-| Model | CV cut RMSE | CV all-cycle RMSE | CV late-life RMSE | Test RMSE (5 seeds) | Test RMSE 95% CI | Test MAE | Test NASA score | Fit s | Latency ms | Size KB |
+| Model | CV cut RMSE | CV all-step RMSE | CV late-life RMSE | Test RMSE (5 seeds) | Test RMSE 95% CI | Test MAE | Test NASA score | Fit s | Latency ms | Size KB |
 |---|---|---|---|---|---|---|---|---|---|---|
 | lightgbm_window50 | 15.12 ± 0.66 | 10.68 ± 0.17 | 6.25 ± 0.66 | 13.75 ± 0.18 | 11.6–15.6 | 10.27 ± 0.10 | 296.44 ± 8.21 | 2.8 | 1.42 | 1132 |
 | gru_w50 | 15.78 ± 1.36 | 11.07 ± 0.53 | 6.49 ± 0.71 | 15.23 ± 0.33 | 12.3–17.0 | 11.15 ± 0.31 | 478.86 ± 122.36 | 194.6 | 5.82 | 171 |
@@ -16,13 +16,13 @@
 
 ## Ablations (dev CV only; test set not touched)
 
-| Variant | Config changes | CV cut RMSE | CV cut MAE | CV cut score/pt | CV all-cycle RMSE | CV late-life RMSE |
+| Variant | Config changes | CV cut RMSE | CV cut MAE | CV cut score/pt | CV all-time RMSE | CV late-life RMSE |
 |---|---|---|---|---|---|---|
-| lightgbm_with_cycle | cycle=True | 16.89 ± 1.19 | 12.53 ± 1.06 | 5.65 ± 1.37 | 12.18 ± 0.29 | 7.30 ± 0.84 |
+| lightgbm_with_cycle | use_time=True | 16.89 ± 1.19 | 12.53 ± 1.06 | 5.65 ± 1.37 | 12.18 ± 0.29 | 7.30 ± 0.84 |
 | lightgbm_cap150 | cap=150 | 19.29 ± 2.02 | 14.64 ± 1.88 | 11.71 ± 3.91 | 13.42 ± 1.06 | 8.57 ± 1.24 |
 | lightgbm_cap100 | cap=100 | 19.91 ± 1.16 | 14.78 ± 0.96 | 6.08 ± 1.33 | 19.92 ± 0.35 | 7.64 ± 1.08 |
 | lightgbm_window15 | window=15 | 21.07 ± 2.29 | 16.44 ± 1.90 | 13.11 ± 7.74 | 16.62 ± 1.46 | 13.38 ± 2.94 |
 | ridge_all_features | none | 22.64 ± 1.62 | 18.64 ± 1.51 | 10.94 ± 3.18 | 19.10 ± 0.89 | 18.99 ± 1.63 |
 | lightgbm_uncapped | cap=None | 25.90 ± 4.56 | 19.06 ± 3.30 | 397.74 ± 525.16 | 14.32 ± 1.47 | 9.20 ± 1.13 |
 
-Metric definitions: `cut` = up to 10 random truncation points per validation engine with true RUL in [10,150] and cycle >= 31, scored against uncapped true RUL; `all` = every cycle vs RUL capped at 125; `late` = cycles with true RUL <= 50. ± is std over 5 CV folds (model seed 0) or over 5 model seeds (test).
+Metric definitions: `cut` = up to 10 random truncation points per validation asset with true RUL in [10,150] and time >= 31, scored against uncapped true RUL; `all` = every time vs RUL capped at 125; `late` = steps with true RUL <= 50. ± is std over 5 CV folds (model seed 0) or over 5 model seeds (test).
