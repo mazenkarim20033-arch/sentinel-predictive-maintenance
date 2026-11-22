@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from run_baselines import EVAL_CAP, FINAL_SEEDS, RAW, ROOT, dev_metrics, summarise
+from run_baselines import EVAL_CAP, FINAL_SEEDS, RAW, REGIMES, ROOT, dev_metrics, summarise
 from sentinel.data.labels import add_test_rul, add_train_rul
 from sentinel.data.loader import load_subset
 from sentinel.data.splits import grouped_kfold_engines, select_engines
@@ -45,7 +45,7 @@ def run_cv(cfg, train, folds):
     per_fold, fit_times, epochs = [], [], []
     for i, fold in enumerate(folds):
         tr, va = select_engines(train, fold["train"]), select_engines(train, fold["val"])
-        pre = Preprocessor(PreprocessConfig(n_regimes=1)).fit(tr)
+        pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(tr)
         wtr, wva = windows_for(tr, pre, cfg["window"]), windows_for(va, pre, cfg["window"])
         model = fit_model(cfg, wtr, seed=0)
         fit_times.append(model.fit_seconds_)
@@ -56,7 +56,7 @@ def run_cv(cfg, train, folds):
 
 
 def run_test(cfg, train, test, subset):
-    pre = Preprocessor(PreprocessConfig(n_regimes=1)).fit(train)
+    pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(train)
     wtr, wte = windows_for(train, pre, cfg["window"]), windows_for(test, pre, cfg["window"], last_only=True)
     preds, fit_times, models = [], [], []
     for seed in FINAL_SEEDS:
@@ -101,6 +101,7 @@ def main() -> None:
     for cfg in CONFIGS:
         if args.only and cfg["name"] not in args.only:
             continue
+        cfg = {**cfg, "regimes": cfg.get("regimes") or REGIMES[args.subset]}
         print(cfg["name"], flush=True)
         cv, cv_fit, cv_epochs = run_cv(cfg, train, folds)
         m, fit_s, lat, size, art, curve = run_test(cfg, train, test, args.subset)
@@ -108,7 +109,7 @@ def main() -> None:
             run_id=f"{args.subset}-{cfg['name']}-{stamp}", subset=args.subset, name=cfg["name"], model=cfg["kind"],
             config={**cfg, **SeqConfig(kind=cfg["kind"]).model_dump(), "features": "raw sequence + mask channel", "test": True},
             split={"type": "grouped_kfold", "n_splits": 5, "seed": 0, "file": f"experiments/splits/{args.subset}_kfold5_seed0.json"},
-            preprocessing={"n_regimes": 1, "per_regime_zscore": True, "fit_scope": "fold train engines only"},
+            preprocessing={"n_regimes": cfg["regimes"], "per_regime_zscore": True, "fit_scope": "fold train engines only"},
             seeds=FINAL_SEEDS, cv_metrics={**cv, "cv_best_epochs": cv_epochs}, test_metrics=m, train_seconds=fit_s,
             latency_single_ms=lat, model_size_bytes=size, artifact_path=str(art.relative_to(ROOT)),
             training_curve_path=str(curve.relative_to(ROOT)), hardware=hw,

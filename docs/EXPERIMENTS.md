@@ -52,6 +52,30 @@ What it does not support:
 - Any ranking among models whose test CIs overlap (all of the above do).
 - No Transformer was run; nothing here justifies the cost yet.
 
+## M4b: FD004 (six operating regimes, two fault modes)
+
+Same protocol as FD001, with the operating settings clustered into 6 regimes (fit on training engines only) and sensors normalised per regime. Configurations were declared before the run. No GRU or LSTM results exist for FD004: a GRU run was started and then stopped by decision (cost vs expected value), so nothing is reported for it. The deep-learning comparison therefore rests on FD001 only.
+
+| Model | CV cut RMSE | Test RMSE | Test 95% CI | Test NASA score | Fit s |
+|---|---|---|---|---|---|
+| LightGBM w50 | 17.38 | 25.65 | 22.8–28.2 | 4,194 | 5.2 |
+| LightGBM w30 | 19.22 | 26.45 | 23.5–29.2 | 4,683 | 5.2 |
+| Random Forest | 19.48 | 26.97 | 24.0–29.7 | 5,086 | 263 |
+| Ridge (last cycle) | 25.69 | 34.15 | 31.3–36.9 | 11,758 | 0 |
+| Constant | 42.62 | 54.90 | 51.8–58.0 | 189,683 | 0 |
+| *Ablation:* LightGBM w50, global normalisation | 23.66 | not evaluated | | | |
+
+What this supports:
+- Per-regime normalisation matters: removing it raised CV cut RMSE from 17.38 to 23.66.
+- FD004 is much harder than FD001 for every model.
+- LightGBM and Random Forest are statistically indistinguishable again; LightGBM is about 50x cheaper to fit and about 100x smaller.
+
+What it does not support or explain:
+- Test RMSE (25.65) is far above CV cut RMSE (17.38), and Ridge shows the same gap. Cause not investigated (candidates: how test trajectories are truncated, train/test shift, the CV cut protocol being easier). Until explained, treat absolute FD004 numbers with caution.
+- Whether sequence models do better on FD004 is untested.
+
+Decision: LightGBM (window 50) is the default model going forward, chosen for equal-or-better accuracy at a fraction of the cost on the two subsets tested, not because deep learning was shown to be worse.
+
 ### Notes
 
 - NASA's own `readme.txt` lists FD004 as 248 train / 249 test engines; the files contain 249 train / 248 test. This project uses the files.

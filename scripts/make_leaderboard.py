@@ -34,7 +34,10 @@ def main() -> None:
               "| Variant | Config changes | CV cut RMSE | CV cut MAE | CV cut score/pt | CV all-cycle RMSE | CV late-life RMSE |", "|---|---|---|---|---|---|---|"]
     base = {"features": "all", "cap": 125, "window": 30, "cycle": False}
     for r in abl:
-        diff = ", ".join(f"{k}={r.config[k]}" for k in base if r.config[k] != base[k]) or "none"
+        diff = [f"{k}={r.config[k]}" for k in base if r.config[k] != base[k]]
+        if r.config.get("regimes") == 1 and args.subset in ("FD002", "FD004"):
+            diff.append("regimes=1 (global normalisation)")
+        diff = ", ".join(diff) or "none"
         c = r.cv_metrics
         lines.append(f"| {r.name} | {diff} | {pm(c['cut_rmse'])} | {pm(c['cut_mae'])} | {pm(c['cut_score_per_point'])} | {pm(c['all_rmse'])} | {pm(c['late_rmse'])} |")
     lines += ["", "Metric definitions: `cut` = up to 10 random truncation points per validation engine with true RUL in [10,150] and cycle >= 31, scored against uncapped true RUL; `all` = every cycle vs RUL capped at 125; `late` = cycles with true RUL <= 50. ± is std over 5 CV folds (model seed 0) or over 5 model seeds (test).", ""]

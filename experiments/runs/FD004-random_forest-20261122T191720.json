@@ -1,0 +1,104 @@
+{
+  "run_id": "FD004-random_forest-20261122T191720",
+  "created_utc": "2026-11-22T19:34:48+00:00",
+  "subset": "FD004",
+  "name": "random_forest",
+  "model": "rf",
+  "config": {
+    "features": "all",
+    "cap": 125,
+    "window": 30,
+    "cycle": false,
+    "test": true,
+    "name": "random_forest",
+    "model": "rf",
+    "regimes": 6
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD004_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 6,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train engines only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 9.449443219489629,
+      "std": 0.2954063846075312
+    },
+    "all_rmse": {
+      "mean": 14.370261580035017,
+      "std": 1.0821170241832896
+    },
+    "late_mae": {
+      "mean": 7.788481658286157,
+      "std": 0.7931712841000158
+    },
+    "late_rmse": {
+      "mean": 11.526676172475922,
+      "std": 1.1752396933256313
+    },
+    "cut_mae": {
+      "mean": 15.024934371488524,
+      "std": 0.7561870252789695
+    },
+    "cut_rmse": {
+      "mean": 19.4816114095643,
+      "std": 1.1280841094008411
+    },
+    "cut_score_per_point": {
+      "mean": 8.962505807618758,
+      "std": 2.4748706436424945
+    }
+  },
+  "test_metrics": {
+    "rmse": {
+      "mean": 26.965048280251615,
+      "std": 0.03545069151480774
+    },
+    "mae": {
+      "mean": 19.24138249389559,
+      "std": 0.02339389419011564
+    },
+    "score": {
+      "mean": 5086.1747274125755,
+      "std": 26.0039554668673
+    },
+    "rmse_ci95_seed_mean_prediction": [
+      23.99286777982312,
+      29.735737015172898
+    ],
+    "score_ci95_seed_mean_prediction": [
+      3457.8130952199945,
+      6970.013407150141
+    ],
+    "n_test_engines": 248
+  },
+  "train_seconds": 263.1886615199968,
+  "latency_single_ms": 58.14720003399998,
+  "model_size_bytes": 121682593,
+  "artifact_path": "artifacts\\FD004\\random_forest.joblib",
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines."
+}

@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "extracted"
 EVAL_CAP = 125
 FINAL_SEEDS = [0, 1, 2, 3, 4]
+REGIMES = {"FD001": 1, "FD002": 6, "FD003": 1, "FD004": 6}
 
 BASE = dict(features="all", cap=125, window=30, cycle=False, test=False)
 CONFIGS = [
@@ -42,6 +43,7 @@ CONFIGS = [
     {**BASE, "name": "lightgbm_window15", "model": "lgbm", "window": 15},
     {**BASE, "name": "lightgbm_window50", "model": "lgbm", "window": 50, "test": True},
     {**BASE, "name": "lightgbm_with_cycle", "model": "lgbm", "cycle": True},
+    {**BASE, "name": "lightgbm_global_norm", "model": "lgbm", "window": 50, "regimes": 1},
 ]
 
 
@@ -85,7 +87,7 @@ def run_cv(cfg: dict, train: pd.DataFrame, folds: list[dict]) -> tuple[dict, flo
     per_fold, fit_times = [], []
     for i, fold in enumerate(folds):
         tr, va = select_engines(train, fold["train"]), select_engines(train, fold["val"])
-        pre = Preprocessor(PreprocessConfig(n_regimes=1)).fit(tr)
+        pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(tr)
         Xtr, wtr = build_xy(tr, pre, cfg)
         Xva, wva = build_xy(va, pre, cfg)
         t0 = time.perf_counter()
@@ -96,7 +98,7 @@ def run_cv(cfg: dict, train: pd.DataFrame, folds: list[dict]) -> tuple[dict, flo
 
 
 def run_test(cfg: dict, train: pd.DataFrame, test: pd.DataFrame, subset: str):
-    pre = Preprocessor(PreprocessConfig(n_regimes=1)).fit(train)
+    pre = Preprocessor(PreprocessConfig(n_regimes=cfg["regimes"])).fit(train)
     Xtr, wtr = build_xy(train, pre, cfg)
     Xte, wte = build_xy(test, pre, cfg, last_only=True)
     y_tr, truth = train_target(wtr.y, cfg["cap"]), wte.y
@@ -144,11 +146,12 @@ def main() -> None:
     for cfg in CONFIGS:
         if args.only and cfg["name"] not in args.only:
             continue
+        cfg = {**cfg, "regimes": cfg.get("regimes") or REGIMES[args.subset]}
         cv, fit_s = run_cv(cfg, train, folds)
         record = RunRecord(
             run_id=f"{args.subset}-{cfg['name']}-{stamp}", subset=args.subset, name=cfg["name"], model=cfg["model"],
             config=cfg, split={"type": "grouped_kfold", "n_splits": 5, "seed": 0, "file": f"experiments/splits/{args.subset}_kfold5_seed0.json"},
-            preprocessing={"n_regimes": 1, "per_regime_zscore": True, "fit_scope": "fold train engines only"},
+            preprocessing={"n_regimes": cfg["regimes"], "per_regime_zscore": True, "fit_scope": "fold train engines only"},
             seeds=FINAL_SEEDS if cfg["test"] else [0], cv_metrics=cv, train_seconds=fit_s, hardware=hw,
             notes="CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train engines.",
         )
