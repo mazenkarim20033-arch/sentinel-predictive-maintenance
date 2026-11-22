@@ -1,0 +1,104 @@
+{
+  "run_id": "FD002-ridge_last-20261122T221101",
+  "created_utc": "2026-11-22T22:11:22+00:00",
+  "subset": "FD002",
+  "name": "ridge_last",
+  "model": "ridge",
+  "config": {
+    "features": "last",
+    "cap": 125,
+    "window": 30,
+    "use_time": false,
+    "test": true,
+    "name": "ridge_last",
+    "model": "ridge",
+    "regimes": 6
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0,
+    "file": "experiments/splits/FD002_kfold5_seed0.json"
+  },
+  "preprocessing": {
+    "n_regimes": 6,
+    "per_regime_zscore": true,
+    "fit_scope": "fold train assets only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "all_mae": {
+      "mean": 16.378790283203124,
+      "std": 0.3943294386932064
+    },
+    "all_rmse": {
+      "mean": 21.22666816711426,
+      "std": 0.5996482749699911
+    },
+    "late_mae": {
+      "mean": 17.894747161865233,
+      "std": 0.676586920787998
+    },
+    "late_rmse": {
+      "mean": 22.39144096374512,
+      "std": 0.7293690656734213
+    },
+    "cut_mae": {
+      "mean": 20.64307403564453,
+      "std": 0.7122044431371257
+    },
+    "cut_rmse": {
+      "mean": 25.29538764953613,
+      "std": 0.9466737997443796
+    },
+    "cut_score_per_point": {
+      "mean": 18.674332413943226,
+      "std": 3.4130936950593305
+    }
+  },
+  "test_metrics": {
+    "rmse": {
+      "mean": 32.41244888305664,
+      "std": 0.0
+    },
+    "mae": {
+      "mean": 23.874204635620117,
+      "std": 0.0
+    },
+    "score": {
+      "mean": 19070.496402578476,
+      "std": 0.0
+    },
+    "rmse_ci95_seed_mean_prediction": [
+      28.89568305015564,
+      35.856237411499016
+    ],
+    "score_ci95_seed_mean_prediction": [
+      10537.396308494968,
+      29216.838500494294
+    ],
+    "n_test_assets": 259
+  },
+  "train_seconds": 0.03126419996842742,
+  "latency_single_ms": 1.460599945858121,
+  "model_size_bytes": 1921,
+  "artifact_path": "artifacts\\FD002\\ridge_last.joblib",
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "CV uses model seed 0; test metrics (if present) are mean over 5 seeds on all train assets."
+}

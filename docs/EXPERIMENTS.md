@@ -198,6 +198,44 @@ What it does not support:
 
 See the M4b notes: the larger official-test RMSE is an evaluation-distribution effect (27% of FD004 test assets have final RUL above the 125 cap), not a train/test shift. The lower recall of warnings on the test set has not been separately verified.
 
+## M7: FD002, FD003 and cross-subset transfer
+
+FD002 and FD003 were run with the same protocol as FD001 and FD004 (constant, Ridge, Random Forest, LightGBM w30 and w50, plus the global-normalisation ablation on the six-regime FD002; GRU/LSTM were not run on these subsets). That ablation was not run for FD003: with a single regime it is identical to LightGBM w50. Full tables: `reports/leaderboard_FD00X.md`, `reports/REPORT.md`; figure `reports/test_predictions.png`.
+
+| Subset | LightGBM w50 test RMSE | 95% CI | Constant baseline | Random Forest | CV cut RMSE (w50) |
+|---|---|---|---|---|---|
+| FD001 | 13.75 | 11.6-15.6 | 43.07 | 14.76 | 15.12 |
+| FD002 | 24.50 | 21.3-27.3 | 54.08 | 26.45 | 17.22 |
+| FD003 | 13.88 | 11.1-16.4 | 45.07 | 15.52 | 14.72 |
+| FD004 | 25.65 | 22.8-28.2 | 54.90 | 26.97 | 17.38 |
+
+What this supports:
+- On these test sets, difficulty follows the number of operating regimes (about 25 RMSE for the six-regime FD002/FD004 versus about 14 for FD001/FD003), not the number of fault modes (FD003 with two fault modes is no worse than FD001).
+- Per-regime normalisation matters on FD002 as it did on FD004: removing it raised development cut RMSE from 17.22 to 23.30.
+- The model ranking is the same on every subset: LightGBM and Random Forest overlap within confidence intervals, both clearly beat Ridge and the constant guess, and LightGBM is far cheaper (FD002: 5 s versus 216 s to fit, 1.1 MB versus 120 MB).
+- Predictions flatten at the 125-cycle cap (figure), which accounts for most of the error on assets with large remaining life.
+
+What it does not support: that the difficulty ordering holds for other models or for real data; differences of about 1-2 RMSE points between models (all CIs overlap).
+
+### Cross-subset transfer (`reports/transfer.md`)
+
+LightGBM w50 trained on one subset and evaluated once on every subset's official test set (single seed, no confidence intervals; 100-259 test points, so differences of 2-3 RMSE points are within noise). `source_norm` uses preprocessing fitted on the source; `target_norm` re-fits only the normalisation and regimes on the target's unlabelled training sensors.
+
+| source \ target (source_norm RMSE) | FD001 | FD002 | FD003 | FD004 |
+|---|---|---|---|---|
+| FD001 | **13.4** | 58.4 | 22.3 | 61.3 |
+| FD002 | 14.7 | **24.6** | 34.9 | 36.6 |
+| FD003 | 14.1 | 56.1 | **13.6** | 61.0 |
+| FD004 | 17.8 | 25.4 | 20.9 | **25.6** |
+
+What this supports:
+- Models trained on single-condition data fail on six-condition data (RMSE 56-61), which is worse than the constant guess (54-55), because the sensor ranges shift with the operating regime.
+- Six-regime models transfer to single-condition targets with small loss when the fault modes are covered (FD002 to FD001: 14.7 versus 13.4 in-subset; FD004 to FD002: 25.4 versus 24.6).
+- Transfer is asymmetric in fault modes: models trained with both fault modes handle a single mode well (FD003 to FD001: 14.1 versus 13.4), while a model that has seen only one mode does badly on a second unseen mode (FD002 to FD003: 34.9; FD001 to FD003: 22.3).
+- Re-normalising on the target's unlabelled sensors (`target_norm`) recovers part of the regime failure (FD001 to FD002: 35.2, FD003 to FD004: 29.6) but remains far worse than training in-subset (24.6, 25.6) and sometimes hurts (FD003 to FD001: 26.4 versus 14.1). It is not a reliable fix.
+
+What it does not support: any claim that a model transfers between machine types without retraining; these are four related simulated subsets of one engine model.
+
 ### Notes
 
 - NASA's own `readme.txt` lists FD004 as 248 train / 249 test engines; the files contain 249 train / 248 test. This project uses the files.

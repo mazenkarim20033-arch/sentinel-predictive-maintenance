@@ -10,6 +10,8 @@ NASA C-MAPSS turbofan degradation dataset (FD001–FD004), Saxena et al., 2008. 
 
 Obtain it from the NASA open data catalog: https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data (file `CMAPSSData.zip`). Place the extracted `train_FD00X.txt`, `test_FD00X.txt`, `RUL_FD00X.txt` files in `data/raw/`. The loader will refuse to run on anything else and will never substitute generated data silently.
 
+Cards and results: [DATASET_CARD](docs/DATASET_CARD.md), [MODEL_CARD](docs/MODEL_CARD.md), [LIMITATIONS](docs/LIMITATIONS.md), [EXPERIMENTS](docs/EXPERIMENTS.md), and the generated [reports/REPORT.md](reports/REPORT.md) (rebuild with `python scripts/make_report.py`).
+
 ## Documents
 
 | Doc | Purpose |
