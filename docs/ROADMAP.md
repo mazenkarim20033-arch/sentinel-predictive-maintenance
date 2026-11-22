@@ -10,7 +10,7 @@ Each milestone ends with: results shown, docs updated, tests passing, your appro
 | 4 | Deep learning | GRU/LSTM on identical splits; capped vs uncapped; Transformer experiment time-boxed | 5–7 d |
 | 4.5 | Generalisation (new; done: spec, loader, preprocessing, exact reproduction of FD001/FD004 results, and a small NASA battery demonstration with 4 cells and no test set) | `DatasetSpec` + adapter interface; C-MAPSS loader/preprocessing/runners refactored to read only the spec; all existing results reproduce unchanged; a second, non-engine dataset (e.g. battery aging or bearings) runs end to end with its own honest results | 4–6 d |
 | 5 | Failure intelligence (done: warning thresholds, lead time, two anomaly detectors, synthetic-fault benchmark; no autoencoder) | Threshold sweep, lead-time evaluation, anomaly detectors, injected-fault benchmark | 4–5 d |
-| 6 | Explainability and uncertainty | SHAP global/local, quantile + conformal intervals, coverage evaluation | 4–5 d |
+| 6 | Explainability and uncertainty (done: TreeSHAP, cross-model comparison, quantile/CQR/conformal intervals with coverage, test-gap diagnosis) | SHAP global/local, quantile + conformal intervals, coverage evaluation | 4–5 d |
 | 7 | Evaluation framework | FD002–FD004 and transfer runs, generated report, EXPERIMENTS/MODEL_CARD/LIMITATIONS drafts | 5 d |
 | 8 | Backend | FastAPI with replay (blind/eval), provenance field, API tests | 4 d |
 | 9 | Frontend | Dashboard, fleet, engine detail, simulation lab, model lab | 7–10 d |

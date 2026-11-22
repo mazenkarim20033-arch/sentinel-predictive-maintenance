@@ -1,0 +1,358 @@
+{
+  "run_id": "FD004-uncertainty-20261122T215712",
+  "created_utc": "2026-11-22T21:57:12+00:00",
+  "subset": "FD004-uncertainty",
+  "name": "intervals_lightgbm_window50",
+  "model": "lgbm",
+  "config": {
+    "features": "all",
+    "cap": 125,
+    "window": 50,
+    "use_time": false,
+    "test": true,
+    "name": "lightgbm_window50",
+    "model": "lgbm",
+    "regimes": 6,
+    "levels": [
+      0.8,
+      0.9
+    ],
+    "methods": [
+      "quantile",
+      "cqr",
+      "conformal"
+    ],
+    "calibration_fraction": 0.2
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0
+  },
+  "preprocessing": {
+    "n_regimes": 6
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "0.8|quantile": {
+      "coverage": 0.6165651684109128,
+      "coverage_ci95": [
+        0.6127072524507682,
+        0.6204084631146627
+      ],
+      "mean_width": 20.28364553032041,
+      "median_width": 17.900480905961686,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.6313253012048192,
+          "mean_width": 16.802314734354272,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.6318072289156627,
+          "mean_width": 27.759841969900705,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.5938955823293173,
+          "mean_width": 35.58042675197271,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.5821686746987952,
+          "mean_width": 33.36067266015298,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.6212000330132879,
+          "mean_width": 14.740301954995326,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.6164252461022126,
+      "fold_coverage_std": 0.021110173204576036
+    },
+    "0.8|cqr": {
+      "coverage": 0.7959640157390325,
+      "coverage_ci95": [
+        0.7927539129640486,
+        0.7991369945101934
+      ],
+      "mean_width": 22.414589509478127,
+      "median_width": 20.08040652595048,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.7969477911646586,
+          "mean_width": 19.564371504715247,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.7039357429718875,
+          "mean_width": 30.606772718234787,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.6467469879518072,
+          "mean_width": 38.37777384525009,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.6210441767068273,
+          "mean_width": 35.85795740036103,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.8670664942639412,
+          "mean_width": 16.46368244172419,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.795849152271268,
+      "fold_coverage_std": 0.01337467398057983
+    },
+    "0.8|conformal": {
+      "coverage": 0.7961599373050988,
+      "coverage_ci95": [
+        0.7929509622316236,
+        0.79933176379949
+      ],
+      "mean_width": 21.3567376914009,
+      "median_width": 23.209055525662748,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.9460240963855422,
+          "mean_width": 23.89359936469746,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.8144578313253013,
+          "mean_width": 27.00210177688811,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.5914859437751004,
+          "mean_width": 26.900451247954383,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.4721285140562249,
+          "mean_width": 25.736596295419822,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.8579053068860216,
+          "mean_width": 18.256003364514545,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.7966080588544946,
+      "fold_coverage_std": 0.020160532511727922
+    },
+    "0.9|quantile": {
+      "coverage": 0.7440937811229571,
+      "coverage_ci95": [
+        0.7406226494395808,
+        0.7475342951028908
+      ],
+      "mean_width": 29.540558930285318,
+      "median_width": 28.736875524069553,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.7591967871485944,
+          "mean_width": 32.142780547793045,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.7360642570281124,
+          "mean_width": 44.782017142265246,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.734136546184739,
+          "mean_width": 48.918886852581146,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.7643373493975903,
+          "mean_width": 42.894147733565624,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.7411208011224518,
+          "mean_width": 20.879162783066082,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.7437538686533226,
+      "fold_coverage_std": 0.021241726405900226
+    },
+    "0.9|cqr": {
+      "coverage": 0.8909859752812291,
+      "coverage_ci95": [
+        0.8884931932113789,
+        0.8934297143456154
+      ],
+      "mean_width": 32.47576814486272,
+      "median_width": 31.56134608673871,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.9150200803212851,
+          "mean_width": 36.08191969885971,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.8231325301204819,
+          "mean_width": 48.89430949095648,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.7865060240963856,
+          "mean_width": 52.86710021276151,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.8011244979919678,
+          "mean_width": 46.201572623044015,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.9317725384467248,
+          "mean_width": 23.203631681619893,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.8909515471176169,
+      "fold_coverage_std": 0.006803419802925365
+    },
+    "0.9|conformal": {
+      "coverage": 0.8928635569560319,
+      "coverage_ci95": [
+        0.8903894253677074,
+        0.8952884100259733
+      ],
+      "mean_width": 31.111206832533707,
+      "median_width": 30.334816069948037,
+      "n": 61249,
+      "by_rul_bin": {
+        "0-25": {
+          "coverage": 0.9794377510040161,
+          "mean_width": 33.596176380006895,
+          "n": 6225
+        },
+        "25-50": {
+          "coverage": 0.9280321285140563,
+          "mean_width": 41.00747681769616,
+          "n": 6225
+        },
+        "50-75": {
+          "coverage": 0.7476305220883535,
+          "mean_width": 40.757486823500095,
+          "n": 6225
+        },
+        "75-100": {
+          "coverage": 0.6737349397590362,
+          "mean_width": 37.81415205669874,
+          "n": 6225
+        },
+        "100-126": {
+          "coverage": 0.9344136014745935,
+          "mean_width": 26.190929987095043,
+          "n": 36349
+        }
+      },
+      "fold_coverage_mean": 0.893366737900597,
+      "fold_coverage_std": 0.016605406787061596
+    }
+  },
+  "test_metrics": {
+    "0.8|quantile": {
+      "coverage": 0.6290322580645161,
+      "coverage_ci95": [
+        0.5673696668802941,
+        0.6867583246826565
+      ],
+      "mean_width": 23.9863362815416,
+      "median_width": 21.537270395848928,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.4596774193548387
+    },
+    "0.8|cqr": {
+      "coverage": 0.7620967741935484,
+      "coverage_ci95": [
+        0.7053576668382693,
+        0.8108398160239743
+      ],
+      "mean_width": 26.164717593010597,
+      "median_width": 23.378895044133273,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.5120967741935484
+    },
+    "0.8|conformal": {
+      "coverage": 0.7580645161290323,
+      "coverage_ci95": [
+        0.7010890710264711,
+        0.8071669120994304
+      ],
+      "mean_width": 23.389689023718574,
+      "median_width": 26.57387736515335,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.532258064516129
+    },
+    "0.9|quantile": {
+      "coverage": 0.7580645161290323,
+      "coverage_ci95": [
+        0.7010890710264711,
+        0.8071669120994304
+      ],
+      "mean_width": 35.07393742964073,
+      "median_width": 31.80231479051118,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.5685483870967742
+    },
+    "0.9|cqr": {
+      "coverage": 0.8830645161290323,
+      "coverage_ci95": [
+        0.8371051637766482,
+        0.9173373111758616
+      ],
+      "mean_width": 37.943757681403426,
+      "median_width": 34.644341527548356,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.6290322580645161
+    },
+    "0.9|conformal": {
+      "coverage": 0.8870967741935484,
+      "coverage_ci95": [
+        0.8416616099173214,
+        0.9207223647715307
+      ],
+      "mean_width": 34.40897771279056,
+      "median_width": 37.938802665678026,
+      "n": 248,
+      "coverage_vs_uncapped_truth": 0.6290322580645161
+    }
+  },
+  "train_seconds": null,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Intervals for capped RUL; calibration on held-out training assets; test evaluated once."
+}

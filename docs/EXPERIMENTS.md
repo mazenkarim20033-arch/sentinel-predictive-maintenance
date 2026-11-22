@@ -71,7 +71,7 @@ What this supports:
 - LightGBM and Random Forest are statistically indistinguishable again; LightGBM is about 50x cheaper to fit and about 100x smaller.
 
 What it does not support or explain:
-- Test RMSE (25.65) is far above CV cut RMSE (17.38), and Ridge shows the same gap. Cause not investigated (candidates: how test trajectories are truncated, train/test shift, the CV cut protocol being easier). Until explained, treat absolute FD004 numbers with caution.
+- Test RMSE (25.65) is far above the development CV cut RMSE (17.38). Investigated in M6 (`reports/gap_diagnostics.md`): this is a difference in evaluation distribution, not a train/test shift. Re-sampling out-of-fold predictions to the test set's RUL distribution gives RMSE 24.5 (5th-95th percentile 22.1-26.9), which contains the test value; the asset-life distributions of train and test are the same (median 234 vs 235). 27% of FD004 test assets have a final RUL above the 125-cycle training cap, and that bin dominates the error (test RMSE 36, bias -27 cycles). The dev "cut" metric samples fewer such points, so it understates the official-test error.
 - Whether sequence models do better on FD004 is untested.
 
 Decision: LightGBM (window 50) is the default model going forward, chosen for equal-or-better accuracy at a fraction of the cost on the two subsets tested, not because deep learning was shown to be worse.
@@ -128,7 +128,7 @@ What this supports:
 
 What it does not support:
 - The cycle-level false-alarm rate (about 0.00-0.02) looks excellent mainly because most cycles are far from failure. The engine-level early-alarm share and the missed share are the more informative figures.
-- Official-test recall is clearly lower than out-of-fold recall (FD004 tau = 30: 0.53 vs 0.78; FD004 tau = 15: 0.29 vs 0.66). This matches the unexplained test-versus-CV gap seen for RMSE; development numbers are probably optimistic for truncated test engines. Test positives are few (for example 60 cycles at tau = 15 on FD001).
+- Official-test recall is clearly lower than out-of-fold recall (FD004 tau = 30: 0.53 vs 0.78; FD004 tau = 15: 0.29 vs 0.66). The RMSE gap between test and development has been explained (an evaluation-distribution effect, see M4b notes and `reports/gap_diagnostics.md`), but the recall gap has not been separately verified. A plausible, untested reason is that test engines contain only the first part of their warning window, so the delay before an alert weighs more on those short segments. Test positives are few (for example 60 cycles at tau = 15 on FD001).
 - Cycle-level recall also counts the lag before an alert fires, so lead time is the better operational measure.
 - Which operating point to choose is a cost decision (missed failure versus false alarm) that this project cannot make.
 
@@ -150,6 +150,53 @@ What it does not support:
 - Any claim about real faults: injected faults are single-signal, applied in normalised space and scaled by healthy variance.
 - Detection rates include chance hits from the 1.5-2.5% per-step false-positive rate, so compare them to the stuck-sensor rows.
 - Detection delay and precision are reported per setting in the generated report; detectors have no temporal model.
+
+## M6: Uncertainty and explainability (FD001 and FD004, LightGBM window 50)
+
+Reports: `reports/uncertainty_FD00X.md/.png`, `reports/explain_FD00X.md/.png`, `reports/gap_diagnostics.md`.
+
+### Prediction intervals
+
+Intervals are for the capped target (RUL above 125 is reported as 125+). Three methods: raw quantile regression (LightGBM, 10/90 and 5/95), conformalised quantile regression (CQR) and split conformal on the point model. Calibration uses 20% of training assets held out from fitting; development coverage is out-of-fold over 5 grouped folds; the official test set was evaluated once.
+
+| nominal | method | FD001 dev | FD001 test (n=100, 95% CI) | FD004 dev | FD004 test (n=248, 95% CI) |
+|---|---|---|---|---|---|
+| 80% | raw quantile | 0.50 | 0.61 (0.51-0.70) | 0.62 | 0.63 (0.57-0.69) |
+| 80% | CQR | 0.81 | 0.78 (0.69-0.85) | 0.80 | 0.76 (0.71-0.81) |
+| 80% | split conformal | 0.80 | 0.71 (0.61-0.79) | 0.80 | 0.76 (0.70-0.81) |
+| 90% | raw quantile | 0.64 | 0.72 (0.63-0.80) | 0.74 | 0.76 (0.70-0.81) |
+| 90% | CQR | 0.91 | 0.85 (0.77-0.91) | 0.89 | 0.88 (0.84-0.92) |
+| 90% | split conformal | 0.90 | 0.79 (0.70-0.86) | 0.89 | 0.89 (0.84-0.92) |
+
+Mean width of the 80% / 90% intervals in development: FD001 CQR 23.8 / 35.9 cycles, conformal 21.6 / 30.6; FD004 CQR 22 / 32, conformal 21 / 31.
+
+What this supports:
+- Raw quantile regression is badly overconfident: its nominal 80% interval covered 50-62% of held-out points. Reporting those intervals as-is would mislead.
+- Conformal calibration restores the nominal coverage on average in development (0.80-0.91 for both methods) and CQR was statistically consistent with nominal on all four official-test checks.
+- Split conformal under-covered on the FD001 test set (80%: 0.71, CI upper bound 0.79; 90%: 0.79, upper bound 0.86).
+
+What it does not support:
+- Coverage at every RUL value. Conformal coverage is marginal. In development, mid-life bins are under-covered while the ends are over-covered: FD001 80% conformal covers 0.99 of points in RUL 0-25 but 0.51 in 75-100 (CQR 0.93 and 0.65); FD004 conformal 0.47 in 75-100. Any interface showing these intervals must say so.
+- Coverage of the true (uncapped) RUL. Because the interval cannot exceed 125, coverage of the official uncapped RUL is much lower (FD004 CQR 80%: 0.51; FD001: 0.68).
+- Coverage under distribution shift: assets from another machine type or subset were not tested, and the exchangeability assumption is only partly checked by the test results above. One seed and one fold assignment.
+
+### Explainability (TreeSHAP on out-of-fold assets)
+
+Exact TreeSHAP from LightGBM, aggregated from the last, mean, std and slope features to one value per signal. Additivity error is 4.5e-13 and the values equal the `shap` library's TreeExplainer exactly (max difference 0.0 on 500 rows).
+
+- Top signals on FD001: s11, s4, s14, s12, s3, s9. On FD004: s11 (dominant, mean |SHAP| 14.5), s14, s4, s9, s17, s3.
+- Slope features carry the most attribution (FD001 14.9 vs 7.5-9.6 for last/mean/std; FD004 17.0 vs 6.0-7.4): the model relies on recent trends more than on current levels.
+- Mean signed attribution by true RUL: for the top signals it is positive (+2 to +5 cycles) early in life and strongly negative (-6 to -15) in the last 25 cycles on FD001, consistent with steady degradation trends.
+- Models agree on which signals matter but not exactly: rank correlation of signal importance between LightGBM SHAP, LightGBM permutation and Random Forest permutation is 0.67-0.89 on FD001 and 0.91-0.94 on FD004, while ridge coefficients agree poorly (0.04-0.34 on FD001, 0.64-0.68 on FD004). Importance is a property of the model, not of the machine.
+- s14 is 3rd on FD001 by SHAP although it was not in the top 5 by simple correlation with RUL (M2 analysis): attribution is conditional on the other signals and on non-linear effects.
+
+What it does not support:
+- Causal statements. These are associations learned by one model; strongly correlated signals (for example s11, s4, s12) share credit unpredictably, so individual rankings among them should not be over-read.
+- Permutation and cross-model comparison used one fold, 4,000 rows and 3 repeats; SHAP used all folds.
+
+### Test-versus-development gap (resolved)
+
+See the M4b notes: the larger official-test RMSE is an evaluation-distribution effect (27% of FD004 test assets have final RUL above the 125 cap), not a train/test shift. The lower recall of warnings on the test set has not been separately verified.
 
 ### Notes
 
