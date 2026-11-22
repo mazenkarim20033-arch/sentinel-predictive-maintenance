@@ -1,0 +1,82 @@
+{
+  "run_id": "battery_nasa_sensors-ridge_last-20261122T212709",
+  "created_utc": "2026-11-22T21:27:14+00:00",
+  "subset": "battery_nasa_sensors",
+  "name": "ridge_last",
+  "model": "ridge",
+  "config": {
+    "name": "ridge_last",
+    "model": "ridge",
+    "features": "last",
+    "stochastic": false,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_sensors_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 13.7485511302948,
+      "std": 3.6356488929413406
+    },
+    "mae": {
+      "mean": 11.019404292106628,
+      "std": 3.13740323855894
+    },
+    "late_rmse": {
+      "mean": 6.619495630264282,
+      "std": 1.524141845030358
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 8.003440856933594,
+        "mae": 5.654094219207764,
+        "late_rmse": 5.073126316070557
+      },
+      "B0006": {
+        "rmse": 18.092748641967773,
+        "mae": 13.495894432067871,
+        "late_rmse": 6.41595458984375
+      },
+      "B0007": {
+        "rmse": 14.371068000793457,
+        "mae": 12.088980674743652,
+        "late_rmse": 5.8622355461120605
+      },
+      "B0018": {
+        "rmse": 14.526947021484375,
+        "mae": 12.838647842407227,
+        "late_rmse": 9.126666069030762
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 0.03858742502052337,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}

@@ -19,6 +19,7 @@ class DatasetData:
     train: pd.DataFrame
     test: pd.DataFrame
     test_final_rul: pd.Series
+    asset_info: pd.DataFrame | None = None
 
     @property
     def name(self) -> str:
@@ -86,7 +87,32 @@ def _load_cmapss(spec: DatasetSpec, raw_dir: Path) -> DatasetData:
     return DatasetData(spec=spec, train=train, test=test, test_final_rul=final_rul)
 
 
-ADAPTERS = {"cmapss": _load_cmapss}
+def _load_nasa_battery(spec: DatasetSpec, raw_dir: Path) -> DatasetData:
+    """Discharge-cycle features per cell. End of life is the first cycle whose smoothed capacity is at or
+    below `eol_capacity_ah`; cells that never reach it are censored and left out of the labelled data."""
+    from sentinel.data.battery import cell_cycles, find_cell_file, first_crossing
+
+    params = spec.source.params
+    frames, info = [], []
+    for asset, cell in enumerate(params["cells"], start=1):
+        cycles = cell_cycles(find_cell_file(raw_dir, cell))
+        eol = first_crossing(cycles["capacity_ah"], params["eol_capacity_ah"])
+        info.append({"asset": asset, "cell": cell, "n_cycles": len(cycles), "eol_time": eol, "reached_eol": eol is not None})
+        if eol is None:
+            continue
+        kept = cycles[cycles["time"] <= eol].copy()
+        kept.insert(0, "asset", asset)
+        frames.append(kept)
+    if not frames:
+        raise DataValidationError("no cell reached the end-of-life threshold")
+    train = validate_frame(pd.concat(frames, ignore_index=True), spec, spec.name)
+    return DatasetData(
+        spec=spec, train=train, test=train.iloc[0:0], test_final_rul=pd.Series(dtype=float, name="final_rul"),
+        asset_info=pd.DataFrame(info),
+    )
+
+
+ADAPTERS = {"cmapss": _load_cmapss, "nasa_battery": _load_nasa_battery}
 
 
 def load_dataset(spec: DatasetSpec, raw_dir: str | Path) -> DatasetData:

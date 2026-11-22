@@ -1,0 +1,14 @@
+﻿name: battery_nasa_sensors
+signals: [dur_s, v_mean, t_to_3p5v_s, t_max, t_rise, chg_dur_s, chg_t_max]
+description: NASA Li-ion battery aging (PCoE), cells B0005/B0006/B0007/B0018 at 24 C, 2 A discharge. One row per discharge cycle. End of life is a project-defined 1.5 Ah (25 percent fade), not NASA's 1.4 Ah criterion.
+conditions: []
+n_regimes: 1
+rul_cap: null
+window: 10
+contiguous_time: true
+time_unit: discharge cycle
+source:
+  adapter: nasa_battery
+  params:
+    cells: [B0005, B0006, B0007, B0018]
+    eol_capacity_ah: 1.5

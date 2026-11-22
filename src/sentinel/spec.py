@@ -9,7 +9,7 @@ CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
 
 
 class SourceSpec(BaseModel):
-    adapter: Literal["cmapss"]
+    adapter: Literal["cmapss", "nasa_battery"]
     params: dict = {}
 
 

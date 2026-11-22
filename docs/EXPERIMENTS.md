@@ -76,6 +76,34 @@ What it does not support or explain:
 
 Decision: LightGBM (window 50) is the default model going forward, chosen for equal-or-better accuracy at a fraction of the cost on the two subsets tested, not because deep learning was shown to be worse.
 
+## M4.5: Second machine type, NASA Li-ion battery aging (generality demonstration)
+
+Purpose: show the same pipeline (spec, loader adapter, per-asset splits, causal windows, tabular features, models, registry) runs on a non-engine machine with different signals. This is a **demonstration, not a benchmark**.
+
+Data: `5. Battery Data Set.zip` from NASA PCoE (S3 mirror, 209,708,670 bytes; the catalog page lists no files and the dashlink landing page was unreachable). The archive holds 34 distinct cells, but capacity series are often unusable as run-to-failure: several cells start far below rated capacity (e.g. B0033 at 0.07 Ah), some contain zeros or spikes, and many stop before end of life. By NASA's own 1.4 Ah criterion only B0005, B0006 and B0018 reach end of life cleanly; B0007 bottoms out at about 1.40 Ah. I therefore used the four original cells (B0005, B0006, B0007, B0018; 24 C, 2 A discharge) with a **project-defined end of life of 1.5 Ah (25% fade)**, chosen after seeing the data so that all four qualify. This is a deviation from NASA's criterion. End of life is the first cycle where the trailing 3-cycle median capacity is at or below 1.5 Ah (so the second low reading marks it). Resulting lifetimes: 100, 77, 127 and 75 discharge cycles (379 labelled rows).
+
+Features per discharge cycle: duration, mean voltage, time to 3.5 V, peak and rise in temperature, plus duration and peak temperature of the preceding charge. Capacity is excluded from the main variant (it defines the label) and added in a second variant. No operating-condition columns and one regime.
+
+Protocol: leave-one-cell-out over 4 cells; windows of 10 cycles; fixed configurations, no tuning; random forest and LightGBM averaged over 5 seeds per fold. **No held-out test set exists**, so every number is a development estimate from 4 trajectories.
+
+| Model (sensor-only variant) | RMSE, cycles (mean ± std over 4 cells) | Late-life RMSE (RUL <= 20) |
+|---|---|---|
+| Constant | 30.9 ± 6.5 | 39.4 |
+| Age only (mean lifetime minus elapsed cycles) | 23.6 ± 11.1 | 16.9 |
+| Ridge, last-cycle signals | 13.7 ± 3.6 | 6.6 |
+| LightGBM | 15.7 ± 6.2 | 4.8 |
+| Random Forest | 16.0 ± 5.3 | 5.8 |
+
+What this supports:
+- The pipeline ran unchanged on unrelated signals, with threshold-defined failure, per-cell splits and censored cells excluded and reported.
+- Cycle-level signals carry information beyond elapsed time: all sensor models beat the constant and age-only baselines on average.
+- Adding capacity as an input did not help (Ridge 13.5, LightGBM 16.8).
+
+What it does not support:
+- Any ranking among Ridge, LightGBM and Random Forest: the spread across cells (std 3.6–6.2) is as large as the gaps, and with 4 folds nothing is statistically separable. LightGBM is best in late life, Ridge best overall, and the age-only baseline is best on one cell (B0005, 6.8).
+- Any claim about batteries in general: one chemistry, one temperature and load, four cells, a project-chosen threshold, and the cutoff voltage differs by cell, which the models could partly exploit.
+- Generalisation across conditions: untested (other cell groups were not usable).
+
 ### Notes
 
 - NASA's own `readme.txt` lists FD004 as 248 train / 249 test engines; the files contain 249 train / 248 test. This project uses the files.

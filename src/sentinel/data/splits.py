@@ -42,6 +42,11 @@ def grouped_kfold_assets(train: pd.DataFrame, n_splits: int = 5, seed: int = 0) 
     ]
 
 
+def leave_one_asset_out(train: pd.DataFrame) -> list[dict[str, list[int]]]:
+    ids = sorted(int(a) for a in train["asset"].unique())
+    return [{"train": [a for a in ids if a != held], "val": [held], "seed": 0} for held in ids]
+
+
 def select_assets(df: pd.DataFrame, assets: list[int]) -> pd.DataFrame:
     return df[df["asset"].isin(assets)].reset_index(drop=True)
 

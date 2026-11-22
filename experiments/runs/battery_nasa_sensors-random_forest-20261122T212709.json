@@ -1,0 +1,86 @@
+{
+  "run_id": "battery_nasa_sensors-random_forest-20261122T212709",
+  "created_utc": "2026-11-22T21:27:23+00:00",
+  "subset": "battery_nasa_sensors",
+  "name": "random_forest",
+  "model": "rf",
+  "config": {
+    "name": "random_forest",
+    "model": "rf",
+    "features": "all",
+    "stochastic": true,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_sensors_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 16.045368098467073,
+      "std": 5.316257037956726
+    },
+    "mae": {
+      "mean": 14.027553139944086,
+      "std": 4.702163807835717
+    },
+    "late_rmse": {
+      "mean": 5.846473741690541,
+      "std": 1.849146464569586
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 15.79146090821114,
+        "mae": 14.34073386291152,
+        "late_rmse": 8.589423929187522
+      },
+      "B0006": {
+        "rmse": 18.104007520388258,
+        "mae": 15.406105669644987,
+        "late_rmse": 4.038135474271078
+      },
+      "B0007": {
+        "rmse": 22.461449947529065,
+        "mae": 19.701345552294587,
+        "late_rmse": 4.273103170374041
+      },
+      "B0018": {
+        "rmse": 7.824554017739831,
+        "mae": 6.662027474925256,
+        "late_rmse": 6.485232392929521
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 2.031111949996557,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}

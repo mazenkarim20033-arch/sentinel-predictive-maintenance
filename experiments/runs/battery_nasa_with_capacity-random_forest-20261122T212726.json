@@ -1,0 +1,86 @@
+{
+  "run_id": "battery_nasa_with_capacity-random_forest-20261122T212726",
+  "created_utc": "2026-11-22T21:27:34+00:00",
+  "subset": "battery_nasa_with_capacity",
+  "name": "random_forest",
+  "model": "rf",
+  "config": {
+    "name": "random_forest",
+    "model": "rf",
+    "features": "all",
+    "stochastic": true,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_with_capacity_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 17.047402558610344,
+      "std": 6.979478355431432
+    },
+    "mae": {
+      "mean": 14.521109448596995,
+      "std": 5.820686496198279
+    },
+    "late_rmse": {
+      "mean": 5.287548374056136,
+      "std": 2.1155427876575237
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 14.712634622593583,
+        "mae": 13.199090712714272,
+        "late_rmse": 7.753319684196488
+      },
+      "B0006": {
+        "rmse": 25.288198640722737,
+        "mae": 20.703439001738023,
+        "late_rmse": 2.4327429593425234
+      },
+      "B0007": {
+        "rmse": 21.30722519668027,
+        "mae": 18.561708334725722,
+        "late_rmse": 4.141082714189275
+      },
+      "B0018": {
+        "rmse": 6.881551774444787,
+        "mae": 5.620199745209964,
+        "late_rmse": 6.82304813849626
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 1.955231600033585,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}

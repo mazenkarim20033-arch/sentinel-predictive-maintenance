@@ -38,7 +38,7 @@ python -m venv .venv --system-site-packages
 
 Extract the NASA zip to `data/raw/extracted/`. Tests marked `realdata` skip automatically if the files are missing.
 
-Machines are described by a `DatasetSpec` in `configs/` (asset id, time, signal and condition columns, regimes, label rule); the shared pipeline reads columns only from that spec. C-MAPSS is currently the only adapter; a second, non-engine dataset is the next step.
+Machines are described by a `DatasetSpec` in `configs/` (asset id, time, signal and condition columns, regimes, label rule); the shared pipeline reads columns only from that spec. Adapters exist for C-MAPSS and for NASA Li-ion battery aging. The battery result is a small demonstration (4 cells, leave-one-cell-out, no held-out test, project-defined end of life), not a benchmark; see [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
 
 ## Implemented so far (Milestones 2–4.5 part 1)
 

@@ -1,0 +1,82 @@
+{
+  "run_id": "battery_nasa_sensors-constant-20261122T212709",
+  "created_utc": "2026-11-22T21:27:14+00:00",
+  "subset": "battery_nasa_sensors",
+  "name": "constant",
+  "model": "constant",
+  "config": {
+    "name": "constant",
+    "model": "constant",
+    "features": "last",
+    "stochastic": false,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_sensors_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 30.94016447143659,
+      "std": 6.532661297428306
+    },
+    "mae": {
+      "mean": 25.94869168983816,
+      "std": 5.459122246275153
+    },
+    "late_rmse": {
+      "mean": 39.39288291900401,
+      "std": 3.9836329243049544
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 28.868689525116423,
+        "mae": 25.0,
+        "late_rmse": 39.577084858001434
+      },
+      "B0006": {
+        "rmse": 26.30674983116998,
+        "mae": 21.819644531646333,
+        "late_rmse": 42.506367907321845
+      },
+      "B0007": {
+        "rmse": 42.117740018961555,
+        "mae": 35.13463943962037,
+        "late_rmse": 32.82915204868477
+      },
+      "B0018": {
+        "rmse": 26.4674785104984,
+        "mae": 21.840482788085936,
+        "late_rmse": 42.658926862008
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 0.03274824999971315,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}

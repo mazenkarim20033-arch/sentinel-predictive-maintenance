@@ -1,0 +1,86 @@
+{
+  "run_id": "battery_nasa_sensors-lightgbm-20261122T212709",
+  "created_utc": "2026-11-22T21:27:25+00:00",
+  "subset": "battery_nasa_sensors",
+  "name": "lightgbm",
+  "model": "lgbm",
+  "config": {
+    "name": "lightgbm",
+    "model": "lgbm",
+    "features": "all",
+    "stochastic": true,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_sensors_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 15.650346523740263,
+      "std": 6.180030309149795
+    },
+    "mae": {
+      "mean": 13.372463507790098,
+      "std": 5.352528961476777
+    },
+    "late_rmse": {
+      "mean": 4.829193527143728,
+      "std": 0.6870100033736014
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 12.807385635257626,
+        "mae": 11.257707661416,
+        "late_rmse": 5.951613552819079
+      },
+      "B0006": {
+        "rmse": 19.596465640643025,
+        "mae": 16.230684167839463,
+        "late_rmse": 4.149280987131028
+      },
+      "B0007": {
+        "rmse": 23.11463719238432,
+        "mae": 20.13095821998232,
+        "late_rmse": 4.4236617804645935
+      },
+      "B0018": {
+        "rmse": 7.082897626676079,
+        "mae": 5.8705039819226075,
+        "late_rmse": 4.7922177881602135
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 0.6412024750025012,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}

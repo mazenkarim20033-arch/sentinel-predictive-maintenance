@@ -8,7 +8,7 @@ Each milestone ends with: results shown, docs updated, tests passing, your appro
 | 2 | Data engineering | Loader + schema validation, sensor analysis, RUL labels, engine-level splits, causal windows, preprocessing tests green | 4–5 d |
 | 3 | Baselines | Constant, Ridge, RF, LightGBM on FD001 with registry and 5 seeds; first honest leaderboard | 4 d |
 | 4 | Deep learning | GRU/LSTM on identical splits; capped vs uncapped; Transformer experiment time-boxed | 5–7 d |
-| 4.5 | Generalisation (new; part 1 done: spec, loader, preprocessing, renames, exact reproduction of FD001/FD004 results; part 2 pending: second non-engine dataset) | `DatasetSpec` + adapter interface; C-MAPSS loader/preprocessing/runners refactored to read only the spec; all existing results reproduce unchanged; a second, non-engine dataset (e.g. battery aging or bearings) runs end to end with its own honest results | 4–6 d |
+| 4.5 | Generalisation (new; done: spec, loader, preprocessing, exact reproduction of FD001/FD004 results, and a small NASA battery demonstration with 4 cells and no test set) | `DatasetSpec` + adapter interface; C-MAPSS loader/preprocessing/runners refactored to read only the spec; all existing results reproduce unchanged; a second, non-engine dataset (e.g. battery aging or bearings) runs end to end with its own honest results | 4–6 d |
 | 5 | Failure intelligence | Threshold sweep, lead-time evaluation, anomaly detectors, injected-fault benchmark | 4–5 d |
 | 6 | Explainability and uncertainty | SHAP global/local, quantile + conformal intervals, coverage evaluation | 4–5 d |
 | 7 | Evaluation framework | FD002–FD004 and transfer runs, generated report, EXPERIMENTS/MODEL_CARD/LIMITATIONS drafts | 5 d |

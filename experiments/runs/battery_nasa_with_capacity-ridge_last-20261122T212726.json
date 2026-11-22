@@ -1,0 +1,82 @@
+{
+  "run_id": "battery_nasa_with_capacity-ridge_last-20261122T212726",
+  "created_utc": "2026-11-22T21:27:27+00:00",
+  "subset": "battery_nasa_with_capacity",
+  "name": "ridge_last",
+  "model": "ridge",
+  "config": {
+    "name": "ridge_last",
+    "model": "ridge",
+    "features": "last",
+    "stochastic": false,
+    "window": 10,
+    "regimes": 1,
+    "use_time": false
+  },
+  "split": {
+    "type": "leave_one_asset_out",
+    "n_folds": 4,
+    "file": "experiments/splits/battery_nasa_with_capacity_loco.json"
+  },
+  "preprocessing": {
+    "n_regimes": 1,
+    "per_regime_zscore": true,
+    "fit_scope": "training cells only"
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "rmse": {
+      "mean": 13.514756679534912,
+      "std": 5.55225926949696
+    },
+    "mae": {
+      "mean": 11.19607162475586,
+      "std": 4.516232792417886
+    },
+    "late_rmse": {
+      "mean": 6.588066339492798,
+      "std": 3.351716602928704
+    },
+    "per_cell": {
+      "B0005": {
+        "rmse": 9.635064125061035,
+        "mae": 8.697234153747559,
+        "late_rmse": 12.282323837280273
+      },
+      "B0006": {
+        "rmse": 20.340675354003906,
+        "mae": 15.620138168334961,
+        "late_rmse": 5.75466251373291
+      },
+      "B0007": {
+        "rmse": 17.395381927490234,
+        "mae": 15.425548553466797,
+        "late_rmse": 4.119317531585693
+      },
+      "B0018": {
+        "rmse": 6.687905311584473,
+        "mae": 5.041365623474121,
+        "late_rmse": 4.1959614753723145
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": 0.04094967496348545,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Leave-one-cell-out over 4 cells; no held-out test set; mean/std are over cells."
+}
