@@ -104,6 +104,53 @@ What it does not support:
 - Any claim about batteries in general: one chemistry, one temperature and load, four cells, a project-chosen threshold, and the cutoff voltage differs by cell, which the models could partly exploit.
 - Generalisation across conditions: untested (other cell groups were not usable).
 
+## M5: Failure warnings and anomaly detection (FD001 and FD004)
+
+Generated reports: `reports/warning_FD00X.md`, `reports/warning_tradeoff_FD00X.png`, `reports/anomaly_FD00X.md`, `reports/anomaly_synthetic_FD00X.png`; run records under `experiments/runs/*-warning-*` and `*-anomaly-*`. Thresholds (normal > 30, warning 15-30, critical < 15) are the brief's experimental defaults, not maintenance standards. Predicted RUL is not a calibrated failure probability and nothing here evaluates calibration.
+
+### Failure warnings (LightGBM window 50, fixed)
+
+Sweep and lead time use out-of-fold predictions on full run-to-failure training trajectories (5-fold grouped CV). The official test set is used once, for the fixed default operating points at cycle level only, because test engines stop before failure and lead time cannot be measured there. Alert = predicted RUL at or below tau for k consecutive cycles.
+
+| | tau = 30, k = 3 | tau = 15, k = 3 |
+|---|---|---|
+| FD001 out-of-fold: precision / recall | 0.97 / 0.83 | 0.97 / 0.79 |
+| FD001: engines with a useful alert, median lead (cycles) | 100%, 25 | 100%, 12 |
+| FD004 out-of-fold: precision / recall | 0.95 / 0.78 | 0.94 / 0.66 |
+| FD004: engines with a useful alert, median lead | 97%, 24.5 | 93%, 11 (4% missed) |
+| FD001 official test: precision / recall | 0.99 / 0.64 | 0.82 / 0.53 |
+| FD004 official test: precision / recall | 0.85 / 0.53 | 0.85 / 0.29 |
+
+What this supports:
+- With the default thresholds the system gives useful advance warning on almost every held-out engine in development, with median lead roughly equal to tau and few early alarms (0-2%).
+- Persistence is a clear trade-off: raising k from 1 to 5 raises precision by a few points but costs recall and lead time (FD004, tau = 10: recall 0.72 to 0.40, missed engines 4% to 24%).
+- Errors are mostly between adjacent classes; on FD001 out-of-fold only 2 of 1,500 critical cycles were classed normal.
+
+What it does not support:
+- The cycle-level false-alarm rate (about 0.00-0.02) looks excellent mainly because most cycles are far from failure. The engine-level early-alarm share and the missed share are the more informative figures.
+- Official-test recall is clearly lower than out-of-fold recall (FD004 tau = 30: 0.53 vs 0.78; FD004 tau = 15: 0.29 vs 0.66). This matches the unexplained test-versus-CV gap seen for RMSE; development numbers are probably optimistic for truncated test engines. Test positives are few (for example 60 cycles at tau = 15 on FD001).
+- Cycle-level recall also counts the lag before an alert fires, so lead time is the better operational measure.
+- Which operating point to choose is a cost decision (missed failure versus false alarm) that this project cannot make.
+
+### Anomaly detection
+
+Two detectors: a statistical one (mean squared z-score against the healthy profile) and Isolation Forest, both fit on the first 30% of life of training engines; the alert threshold is the 99th percentile on a separate healthy calibration slice of training engines. An autoencoder was not tried because the simpler detector already matches or beats Isolation Forest (see below), so it was not justified.
+
+A. Degradation analysis on real trajectories (descriptive only; C-MAPSS has no anomaly labels, so no accuracy is claimed). Scores rise as engines degrade: on FD001 the statistical score is 0.3x the threshold for RUL above 100 and 4.2x for RUL under 25 (mean Spearman with time 0.74). Every engine eventually produces a sustained alert, with median lead of 50 cycles (FD001, statistical), 51 (Isolation Forest), and 43 / 53 on FD004. A sustained alert already fired inside the healthy phase for 2-3% of engines, and the clean-phase false-positive rate is 1.5-2.5%, above the nominal 1% (the threshold was calibrated on different engines).
+
+B. Controlled synthetic faults, kept separate (not real anomalies). One signal modified inside the healthy phase of held-out engines (10 injections per engine and setting; magnitudes 1, 2, 3, 5 healthy standard deviations; 15 cycles, spike 1 cycle). Event detection rate at 5 standard deviations, FD001 statistical detector: noise burst 0.99, step 0.93, ramp 0.65, spike 0.42, stuck sensor 0.13. On FD004 the same detector gives 0.91, 0.44, 0.28, 0.16 and 0.09. Isolation Forest is worse for large faults (FD001: noise burst 0.33, step 0.35).
+
+What this supports:
+- Large noise bursts and step shifts are detectable; small faults (2 standard deviations or less) and single-cycle spikes mostly are not.
+- A stuck sensor is not detected at all: its rate (0.09-0.13) is the same as the false-alarm hit rate without any fault. A frozen but normal-looking value is invisible to a per-step detector; catching it needs a temporal feature such as a rolling variance.
+- The simple statistical detector beats Isolation Forest on these faults, so complexity did not help.
+- Detection is harder on FD004 (six regimes) than FD001.
+
+What it does not support:
+- Any claim about real faults: injected faults are single-signal, applied in normalised space and scaled by healthy variance.
+- Detection rates include chance hits from the 1.5-2.5% per-step false-positive rate, so compare them to the stuck-sensor rows.
+- Detection delay and precision are reported per setting in the generated report; detectors have no temporal model.
+
 ### Notes
 
 - NASA's own `readme.txt` lists FD004 as 248 train / 249 test engines; the files contain 249 train / 248 test. This project uses the files.

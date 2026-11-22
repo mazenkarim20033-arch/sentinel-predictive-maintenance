@@ -1,0 +1,377 @@
+{
+  "run_id": "FD004-anomaly-20261122T214542",
+  "created_utc": "2026-11-22T21:45:42+00:00",
+  "subset": "FD004-anomaly",
+  "name": "anomaly_detectors",
+  "model": "statistical+isolation_forest",
+  "config": {
+    "healthy_frac": 0.3,
+    "duration": 15,
+    "magnitudes": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "reps": 10,
+    "quantile": 0.99,
+    "persistence_k": 3,
+    "kinds": [
+      "spike",
+      "step",
+      "ramp",
+      "stuck",
+      "noise_burst"
+    ]
+  },
+  "split": {
+    "type": "grouped_kfold",
+    "n_splits": 5,
+    "seed": 0
+  },
+  "preprocessing": {
+    "n_regimes": 6
+  },
+  "seeds": [
+    0
+  ],
+  "cv_metrics": {
+    "synthetic_injection": {
+      "statistical|spike|1": {
+        "precision": 0.010411622276029056,
+        "step_recall": 0.017269076305220885,
+        "event_detection_rate": 0.017269076305220885,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "statistical|spike|2": {
+        "precision": 0.013533107781536975,
+        "step_recall": 0.02248995983935743,
+        "event_detection_rate": 0.02248995983935743,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "statistical|spike|3": {
+        "precision": 0.024832855778414518,
+        "step_recall": 0.04176706827309237,
+        "event_detection_rate": 0.04176706827309237,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "statistical|spike|5": {
+        "precision": 0.08692737430167598,
+        "step_recall": 0.15622489959839359,
+        "event_detection_rate": 0.15622489959839359,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "statistical|step|1": {
+        "precision": 0.16578185328185327,
+        "step_recall": 0.018393574297188756,
+        "event_detection_rate": 0.10401606425702811,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|step|2": {
+        "precision": 0.18408662900188325,
+        "step_recall": 0.020937081659973225,
+        "event_detection_rate": 0.11686746987951807,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|step|3": {
+        "precision": 0.28425655976676384,
+        "step_recall": 0.03654618473895582,
+        "event_detection_rate": 0.16987951807228915,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "statistical|step|5": {
+        "precision": 0.6471661766196898,
+        "step_recall": 0.17089692101740295,
+        "event_detection_rate": 0.4397590361445783,
+        "median_delay": 1.0,
+        "n_events": 2490
+      },
+      "statistical|ramp|1": {
+        "precision": 0.16799806342290002,
+        "step_recall": 0.018580990629183402,
+        "event_detection_rate": 0.09678714859437751,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "statistical|ramp|2": {
+        "precision": 0.17986479961371318,
+        "step_recall": 0.019946452476572958,
+        "event_detection_rate": 0.10722891566265061,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|ramp|3": {
+        "precision": 0.19400889304937982,
+        "step_recall": 0.0221954484605087,
+        "event_detection_rate": 0.1285140562248996,
+        "median_delay": 5.0,
+        "n_events": 2490
+      },
+      "statistical|ramp|5": {
+        "precision": 0.3514280310194817,
+        "step_recall": 0.049745649263721554,
+        "event_detection_rate": 0.27991967871485945,
+        "median_delay": 11.0,
+        "n_events": 2490
+      },
+      "statistical|stuck|1": {
+        "precision": 0.17216294859359846,
+        "step_recall": 0.019009370816599733,
+        "event_detection_rate": 0.09477911646586346,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|stuck|2": {
+        "precision": 0.17686585073194144,
+        "step_recall": 0.019732262382864792,
+        "event_detection_rate": 0.0927710843373494,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|stuck|3": {
+        "precision": 0.1710208030962748,
+        "step_recall": 0.01892904953145917,
+        "event_detection_rate": 0.09116465863453815,
+        "median_delay": 5.0,
+        "n_events": 2490
+      },
+      "statistical|stuck|5": {
+        "precision": 0.17025914264955194,
+        "step_recall": 0.018821954484605087,
+        "event_detection_rate": 0.09036144578313253,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "statistical|noise_burst|1": {
+        "precision": 0.1775812619502868,
+        "step_recall": 0.019892904953145916,
+        "event_detection_rate": 0.10642570281124498,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "statistical|noise_burst|2": {
+        "precision": 0.2512066695919263,
+        "step_recall": 0.03065595716198126,
+        "event_detection_rate": 0.18875502008032127,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|noise_burst|3": {
+        "precision": 0.4170862705605908,
+        "step_recall": 0.06653279785809907,
+        "event_detection_rate": 0.44738955823293175,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "statistical|noise_burst|5": {
+        "precision": 0.6959865629420084,
+        "step_recall": 0.21078982597054885,
+        "event_detection_rate": 0.9136546184738956,
+        "median_delay": 2.0,
+        "n_events": 2490
+      },
+      "isolation_forest|spike|1": {
+        "precision": 0.015459363957597174,
+        "step_recall": 0.028112449799196786,
+        "event_detection_rate": 0.028112449799196786,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "isolation_forest|spike|2": {
+        "precision": 0.018772084805653712,
+        "step_recall": 0.03413654618473896,
+        "event_detection_rate": 0.03413654618473896,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "isolation_forest|spike|3": {
+        "precision": 0.023908751919280543,
+        "step_recall": 0.043775100401606426,
+        "event_detection_rate": 0.043775100401606426,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "isolation_forest|spike|5": {
+        "precision": 0.021495942092564158,
+        "step_recall": 0.0393574297188755,
+        "event_detection_rate": 0.0393574297188755,
+        "median_delay": 0.0,
+        "n_events": 2490
+      },
+      "isolation_forest|step|1": {
+        "precision": 0.18798151001540833,
+        "step_recall": 0.02286479250334672,
+        "event_detection_rate": 0.13775100401606424,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|step|2": {
+        "precision": 0.22546363825797042,
+        "step_recall": 0.028969210174029453,
+        "event_detection_rate": 0.1606425702811245,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|step|3": {
+        "precision": 0.2669172932330827,
+        "step_recall": 0.03611780455153949,
+        "event_detection_rate": 0.19036144578313252,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|step|5": {
+        "precision": 0.30200594353640414,
+        "step_recall": 0.04353413654618474,
+        "event_detection_rate": 0.19718875502008032,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|ramp|1": {
+        "precision": 0.17650962176509621,
+        "step_recall": 0.021365461847389557,
+        "event_detection_rate": 0.13293172690763053,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|ramp|2": {
+        "precision": 0.19248415993008522,
+        "step_recall": 0.02358768406961178,
+        "event_detection_rate": 0.14337349397590363,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|ramp|3": {
+        "precision": 0.21089444679949132,
+        "step_recall": 0.026639892904953145,
+        "event_detection_rate": 0.15502008032128514,
+        "median_delay": 5.0,
+        "n_events": 2490
+      },
+      "isolation_forest|ramp|5": {
+        "precision": 0.24499387004495302,
+        "step_recall": 0.03210174029451138,
+        "event_detection_rate": 0.1670682730923695,
+        "median_delay": 5.0,
+        "n_events": 2490
+      },
+      "isolation_forest|stuck|1": {
+        "precision": 0.1781340458695168,
+        "step_recall": 0.0214190093708166,
+        "event_detection_rate": 0.121285140562249,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|stuck|2": {
+        "precision": 0.17004680187207488,
+        "step_recall": 0.020428380187416332,
+        "event_detection_rate": 0.11325301204819277,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|stuck|3": {
+        "precision": 0.1761414503133393,
+        "step_recall": 0.02107095046854083,
+        "event_detection_rate": 0.12248995983935743,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|stuck|5": {
+        "precision": 0.1720598080785539,
+        "step_recall": 0.020642570281124498,
+        "event_detection_rate": 0.11124497991967872,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|noise_burst|1": {
+        "precision": 0.20391061452513967,
+        "step_recall": 0.02540829986613119,
+        "event_detection_rate": 0.1461847389558233,
+        "median_delay": 4.0,
+        "n_events": 2490
+      },
+      "isolation_forest|noise_burst|2": {
+        "precision": 0.23001665278934222,
+        "step_recall": 0.029585006693440427,
+        "event_detection_rate": 0.1606425702811245,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|noise_burst|3": {
+        "precision": 0.25462218649517687,
+        "step_recall": 0.03392235609103079,
+        "event_detection_rate": 0.17991967871485945,
+        "median_delay": 3.0,
+        "n_events": 2490
+      },
+      "isolation_forest|noise_burst|5": {
+        "precision": 0.2797053692576081,
+        "step_recall": 0.03863453815261044,
+        "event_detection_rate": 0.19397590361445782,
+        "median_delay": 3.0,
+        "n_events": 2490
+      }
+    },
+    "clean_fpr": {
+      "statistical": 0.02260165271165107,
+      "isolation_forest": 0.024681223663328408
+    },
+    "degradation": {
+      "statistical": {
+        "assets": 249,
+        "sustained_alert_frac": 1.0,
+        "alert_in_healthy_phase_frac": 0.020080321285140562,
+        "median_lead": 43.0,
+        "lead_p10": 11.8,
+        "lead_p90": 84.20000000000002,
+        "mean_spearman_score_vs_time": 0.745990208336304,
+        "median_score_over_threshold_by_rul": {
+          "0-25": 2.9399513185013104,
+          "25-50": 1.2506550700003478,
+          "50-100": 0.46821267622145135,
+          "100-150": 0.26158561887502507,
+          "150-inf": 0.22392539829945218
+        }
+      },
+      "isolation_forest": {
+        "assets": 249,
+        "sustained_alert_frac": 1.0,
+        "alert_in_healthy_phase_frac": 0.020080321285140562,
+        "median_lead": 53.0,
+        "lead_p10": 25.0,
+        "lead_p90": 102.20000000000002,
+        "mean_spearman_score_vs_time": 0.7296096997084998,
+        "median_score_over_threshold_by_rul": {
+          "0-25": 1.1965841589333865,
+          "25-50": 1.0905992587495055,
+          "50-100": 0.9169542896337344,
+          "100-150": 0.8300995248845414,
+          "150-inf": 0.8110447867769881
+        }
+      }
+    }
+  },
+  "test_metrics": null,
+  "train_seconds": null,
+  "latency_single_ms": null,
+  "model_size_bytes": null,
+  "artifact_path": null,
+  "training_curve_path": null,
+  "hardware": {
+    "torch": "2.13.0+cpu",
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.9",
+    "device": "cpu",
+    "numpy": "2.4.4",
+    "sklearn": "1.8.0",
+    "lightgbm": "4.7.0"
+  },
+  "notes": "Synthetic injection results are separate from degradation analysis; no accuracy is claimed on real anomalies."
+}
