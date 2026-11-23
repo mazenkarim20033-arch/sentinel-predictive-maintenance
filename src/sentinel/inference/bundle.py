@@ -101,6 +101,21 @@ class ModelBundle:
         out["anomaly_alert"] = alert_state(-scores, -self.anomaly_threshold, PERSISTENCE)
         return out
 
+    def explain(self, frame: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray, float]:
+        """TreeSHAP attributions per signal for every step of ONE asset (row i uses rows <= i only).
+        Returns (signal contributions, raw model output before clipping, base value). Associations, not causes."""
+        from sentinel.explain.shap_utils import aggregate_by_signal, lgbm_shap
+
+        frame = self._validate(frame)
+        z = self.pre.transform(frame)
+        cols = self.pre.feature_cols
+        X = tabular_features(make_windows(z, cols, self.window), cols)
+        values, base = lgbm_shap(self.point, X)
+        agg, signals = aggregate_by_signal(values, list(X.columns))
+        contrib = pd.DataFrame(agg, columns=signals)
+        contrib.insert(0, "time", z["time"].to_numpy())
+        return contrib, self.point.predict(X), base
+
     def _validate(self, frame: pd.DataFrame) -> pd.DataFrame:
         missing = [c for c in self.spec.columns if c != "asset" and c not in frame.columns]
         if missing:

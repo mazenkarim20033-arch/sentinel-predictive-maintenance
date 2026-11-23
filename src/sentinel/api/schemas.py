@@ -160,6 +160,24 @@ class ReplayState(BaseModel):
     notes: list[str]
 
 
+class Contribution(BaseModel):
+    signal: str
+    contribution: float
+    value: float
+
+
+class ExplainResponse(BaseModel):
+    provenance: Literal["prediction"] = "prediction"
+    subset: str
+    engine_id: int
+    cycle: int
+    base_value: float
+    raw_prediction: float
+    rul: float
+    contributions: list[Contribution]
+    notes: list[str]
+
+
 class ModelInfo(BaseModel):
     subset: str
     available: bool

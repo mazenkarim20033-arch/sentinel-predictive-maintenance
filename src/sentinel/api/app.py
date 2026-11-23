@@ -171,6 +171,29 @@ def create_app(services: Services | None = None, origins: list[str] | None = Non
                              notes=[REPLAY_NOTE, "Blind mode withholds ground truth; eval mode shows it for comparison only, and it is never a model input.",
                                     S.CAP_NOTE])
 
+    @app.get("/explain/{subset}/{engine_id}", response_model=S.ExplainResponse)
+    def explain(subset: str, engine_id: int, cycle: int | None = Query(None, ge=1)):
+        bundle, fleet_data = svc.bundle(subset), svc.fleet(subset)
+        inputs = model_input(fleet_data, engine_id)
+        observed = int(inputs["time"].max())
+        t = observed if cycle is None else cycle
+        if t > observed:
+            raise HTTPException(422, f"cycle {t} is beyond the {observed} observed cycles of engine {engine_id}")
+        visible = inputs[inputs["time"] <= t]
+        try:
+            contrib, raw, base = bundle.explain(visible)
+        except BundleError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        row = contrib.iloc[-1]
+        now = visible.iloc[-1]
+        signals = [c for c in contrib.columns if c != "time"]
+        items = sorted((S.Contribution(signal=s, contribution=float(row[s]), value=float(now[s])) for s in signals), key=lambda c: -abs(c.contribution))
+        return S.ExplainResponse(subset=subset, engine_id=engine_id, cycle=t, base_value=base, raw_prediction=float(raw[-1]),
+                                 rul=float(np.clip(raw[-1], 0, bundle.cap)), contributions=items,
+                                 notes=["Attributions are TreeSHAP values of this model: they describe how it uses its inputs, not physical causes.",
+                                        "Each signal's contribution sums the effect of its recent level, trend and variability; correlated signals share credit.",
+                                        S.CAP_NOTE])
+
     @app.get("/models", response_model=list[S.ModelInfo])
     def models():
         out = []

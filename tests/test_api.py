@@ -170,6 +170,28 @@ def test_ground_truth_is_never_passed_to_the_model(bundle, fleet_frame, tmp_path
     assert seen and all("rul" not in cols and "rul_capped" not in cols for cols in seen)
 
 
+def test_explain_contributions_are_additive_sorted_and_causal(bundle, fleet_frame, tmp_path, client):
+    r = client.get("/explain/FDX/2", params={"cycle": 30}).json()
+    assert r["provenance"] == "prediction" and r["cycle"] == 30 and len(r["contributions"]) == len(bundle.pre.feature_cols) == 20
+    total = r["base_value"] + sum(c["contribution"] for c in r["contributions"])
+    assert total == pytest.approx(r["raw_prediction"], abs=1e-6)
+    assert r["rul"] == pytest.approx(min(max(r["raw_prediction"], 0), 125), abs=1e-9)
+    mags = [abs(c["contribution"]) for c in r["contributions"]]
+    assert mags == sorted(mags, reverse=True) and any("causes" in n for n in r["notes"])
+    tampered = fleet_frame.copy()
+    tampered.loc[(tampered["asset"] == 2) & (tampered["time"] > 30), SIGNALS] += 500.0
+    other = make_client(bundle, tampered, tmp_path)[0].get("/explain/FDX/2", params={"cycle": 30}).json()
+    assert other["contributions"] == r["contributions"] and other["raw_prediction"] == r["raw_prediction"]
+    default = client.get("/explain/FDX/2").json()
+    assert default["cycle"] == client.get("/engines/FDX/2").json()["observed_cycles"]
+
+
+@pytest.mark.parametrize("url,status", [("/explain/FDX/999", 404), ("/explain/NOPE/1", 404), ("/explain/FDX/1?cycle=0", 422),
+                                        ("/explain/FDX/1?cycle=99999", 422), ("/explain/FDX/abc", 422)])
+def test_explain_rejects_bad_requests(client, url, status):
+    assert client.get(url).status_code == status
+
+
 def test_missing_artifacts_give_clear_503s(bundle, fleet_frame, tmp_path):
     no_model, _ = make_client(bundle, fleet_frame, tmp_path, with_bundle=False)
     for url in ("/fleet/FDX", "/engines/FDX/1", "/replay/FDX/1?cycle=1"):

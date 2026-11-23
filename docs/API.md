@@ -24,6 +24,7 @@ Interactive docs: `http://localhost:8000/docs`. CORS allows `http://localhost:51
 | `GET /engines/{subset}/{id}` | signals, predictions over time, optional `include_truth` |
 | `POST /predict/rul`, `/predict/risk`, `/predict/anomaly` | body `{subset, history: [{time, <conditions>, <signals>}...]}`; stateless, works for any history that matches the subset's spec |
 | `GET /replay/{subset}/{id}?cycle=t&mode=blind\|eval` | prediction state at cycle t, history up to t, sensor values at t |
+| `GET /explain/{subset}/{id}?cycle=t` | TreeSHAP contribution of each signal to the prediction made at cycle t (default: last observed cycle); contributions sum to the raw model output; history is cut server-side like replay |
 | `GET /models` | bundle metadata per subset |
 | `GET /evaluation/{subset}` | leaderboard from the experiment records (test RMSE with confidence interval, NASA score, cost) |
 

@@ -13,7 +13,7 @@ Each milestone ends with: results shown, docs updated, tests passing, your appro
 | 6 | Explainability and uncertainty (done: TreeSHAP, cross-model comparison, quantile/CQR/conformal intervals with coverage, test-gap diagnosis) | SHAP global/local, quantile + conformal intervals, coverage evaluation | 4–5 d |
 | 7 | Evaluation framework (done: FD002/FD003, cross-subset transfer, generated REPORT.md, figures, dataset/model cards, limitations) | FD002–FD004 and transfer runs, generated report, EXPERIMENTS/MODEL_CARD/LIMITATIONS drafts | 5 d |
 | 8 | Backend (done: serving bundle, FastAPI endpoints, replay with blind/eval modes, provenance labels, 40 API/inference tests; see docs/API.md) | FastAPI with replay (blind/eval), provenance field, API tests | 4 d |
-| 9 | Frontend | Dashboard, fleet, engine detail, simulation lab, model lab | 7–10 d |
+| 9 | Frontend (done: six pages, provenance labels, replay lab, 19 frontend tests, checked in a browser at desktop and phone width; see web/README.md) | Dashboard, fleet, engine detail, simulation lab, model lab | 7–10 d |
 | 10 | Integration and quality | End-to-end test, latency measurement, error handling | 3 d |
 | 11 | Deployment and write-up | Static snapshot demo, screenshots, case study, repo cleanup | 3–4 d |
 
