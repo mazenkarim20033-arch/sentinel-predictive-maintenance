@@ -1,15 +1,12 @@
+import { ApiError } from "./errors";
+import { snapshotApi } from "./snapshot";
 import type { EngineDetail, EvaluationResponse, ExplainResponse, FleetResponse, Health, ModelInfo, ReplayState, Risk, SubsetInfo } from "./types";
 
+export { ApiError };
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
 export const API_DOWN = "Cannot reach the SENTINEL API. Start it with: uvicorn sentinel.api.app:app --port 8000";
-
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string, cause?: unknown) {
-    super(message, cause === undefined ? undefined : { cause });
-    this.status = status;
-  }
-}
+/** The public demo serves recorded outputs of the same API instead of calling a live server. */
+export const IS_SNAPSHOT = import.meta.env.VITE_SNAPSHOT === "1";
 
 type Params = Record<string, string | number | boolean | undefined>;
 
@@ -39,7 +36,7 @@ async function request<T>(path: string, params?: Params, signal?: AbortSignal): 
   return (await res.json()) as T;
 }
 
-export const api = {
+export const liveApi = {
   health: (signal?: AbortSignal) => request<Health>("/health", undefined, signal),
   subsets: (signal?: AbortSignal) => request<SubsetInfo[]>("/subsets", undefined, signal),
   fleet: (subset: string, p: { risk?: Risk; anomalous?: boolean; search?: string; sort?: "rul" | "engine_id"; limit?: number; offset?: number } = {}, signal?: AbortSignal) =>
@@ -52,3 +49,5 @@ export const api = {
   models: (signal?: AbortSignal) => request<ModelInfo[]>("/models", undefined, signal),
   evaluation: (subset: string, signal?: AbortSignal) => request<EvaluationResponse>(`/evaluation/${subset}`, undefined, signal),
 };
+
+export const api: typeof liveApi = IS_SNAPSHOT ? snapshotApi : liveApi;

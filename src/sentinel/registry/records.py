@@ -33,10 +33,16 @@ def hardware_info() -> dict:
     import lightgbm
     import numpy
     import sklearn
-    import torch
+
+    try:
+        import torch
+
+        torch_version = torch.__version__
+    except ImportError:  # the deep-learning extra is optional
+        torch_version = None
 
     return {
-        "torch": torch.__version__,
+        "torch": torch_version,
         "processor": platform.processor(),
         "platform": platform.platform(),
         "python": platform.python_version(),

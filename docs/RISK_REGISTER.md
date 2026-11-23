@@ -25,6 +25,26 @@
 | 20 | Abstraction built before a second dataset exists | Wrong abstraction | Design `DatasetSpec` from C-MAPSS plus one concrete second dataset, then refactor; avoid speculative options |
 | 21 | Hard-coded C-MAPSS constants (column names, 21 sensors, 1..N ids, 125 cap) in current code | Blocks generality | Refactor in Milestone 4.5, with regression tests that old results reproduce |
 
+## Outcome at project end
+
+| # | What happened |
+|---|---|
+| 1, 2, 7 | Mitigated and tested: engine-level splits, fit-on-train preprocessing, causal windows, test set used once per final configuration. |
+| 3 | Mitigated: bootstrap intervals reported; ties reported as ties. |
+| 4 | Occurred and analysed: the 125 cap dominates test error for engines with long remaining life (27% of FD004 test engines); both capped and uncapped variants were run. |
+| 5 | Confirmed and mitigated: without per-regime normalisation development error rose from 17.2 to 23.3 (FD002) and 17.4 to 23.7 (FD004). |
+| 6 | Mitigated in the API: only held-out engines are replayed. |
+| 8 | Ablated: the cycle number added nothing. |
+| 9, 10, 12 | Mitigated by wording and labelling rules in docs and UI. |
+| 11 | Occurred: calibrated intervals are uneven across RUL (weak in mid-life) and split conformal under-covered on the FD001 test set; documented and shown in the interface. |
+| 13 | Partly occurred: GRU/LSTM were run on FD001 only to limit cost. |
+| 14 | Mostly avoided: no Transformer, autoencoder, MLflow, SQLite or Docker. |
+| 15 | Occurred: deep models did not beat LightGBM; reported. |
+| 16 | Checked: download links, sizes and SHA-256 recorded; the NASA catalogue page itself lists no files, so a mirror is used. |
+| 17 | Resolved: pip-installable package with extras; verified from a clean checkout. |
+| 18, 19, 20 | Mitigated or scoped: generality claimed only for the pipeline, demonstrated on one extra dataset (four cells, no test set); censored units are excluded, not modelled. |
+| 21 | Resolved in the machine-agnostic refactor; FD001 and FD004 results reproduced exactly. |
+
 ## Assumptions
 
 - The NASA files are unchanged from the public release; counts in PROJECT_OVERVIEW are checked on load.

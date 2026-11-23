@@ -30,6 +30,8 @@ python scripts/benchmark_api.py    # writes reports/performance.md
 | Frontend | `web/src/test/app.test.tsx` | dashboard rendering, loading, error and retry, API-unreachable message, empty states, engine selection, filters, comparison limit, replay step/play/pause/restart without requesting beyond the history, blind vs evaluation truth visibility, model lab and research pages, API client error handling |
 | Accessibility | `web/src/test/a11y.test.tsx`, browser run | axe-core on every page in jsdom (with a negative control proving it can fail); colour contrast checked separately in a real browser in light and dark themes |
 | Full stack | `web/src/test/live.test.tsx` via `scripts/run_e2e.py` | the frontend rendering real API data end to end, replay truth equals the dataset's, server log clean |
+| Public demo | `web/src/test/snapshot.test.ts` | the recorded-playback client follows the server's filtering, sorting, paging, cycle slicing and truth rules; with the live API and an exported snapshot present, fleet state for all 100 FD001 engines and replay/explanation at several cycles equal the live API's values |
+| Clean checkout | manual, before release | fresh clone, fresh virtual environment, `pip install -e ".[all]"`, `fetch_data.py` (checksum verified), `build_bundle.py`, `pytest` and `npm ci && npm test && npm run build`; found and fixed a test that assumed all four bundles were built |
 
 ## Problems the quality work found and fixed
 - Extreme sensor values (about 1e308) overflowed the anomaly score to infinity and produced a 500; inputs beyond 1e9 are now rejected with a 422 and scores saturate at 1e12.

@@ -9,3 +9,5 @@ node_modules/
 
 web/dist/
 *.tsbuildinfo
+
+web/public/snapshot/

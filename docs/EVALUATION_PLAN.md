@@ -1,5 +1,7 @@
 # Evaluation Plan
 
+> **Status at project end.** Implemented as written: engine-level splits, official test used once per final configuration, bootstrap confidence intervals, leakage tests. Two refinements: development used grouped 5-fold CV with a "cut" metric (random truncation points with RUL in [10,150]), which turned out not to match the official test's RUL distribution, so a diagnostic (`reports/gap_diagnostics.md`) resampled development predictions to the test distribution; and the NASA score constants remain the commonly cited ones, unverified against a primary source. Warning lead time and interval coverage were evaluated on out-of-fold predictions from full run-to-failure engines, with the test set used once for fixed default operating points at cycle level.
+
 ## Splits
 
 | Level | Data | Use |

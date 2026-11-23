@@ -1,0 +1,60 @@
+name: Deploy static demo
+
+# Builds the recorded-playback demo (no server) and publishes it to GitHub Pages.
+# It regenerates the snapshot from the NASA data in CI, so nothing large is committed.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[api,explain,dev]"
+      - name: Fetch and verify NASA C-MAPSS
+        run: python scripts/fetch_data.py
+      - name: Build serving bundles
+        run: python scripts/build_bundle.py --subsets FD001 FD004
+      - name: Export recorded outputs
+        run: python scripts/export_snapshot.py --subsets FD001 FD004
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the demo
+        working-directory: web
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: |
+          npm ci
+          npm test
+          npm run build:demo
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -15,12 +15,6 @@ Each milestone ends with: results shown, docs updated, tests passing, your appro
 | 8 | Backend (done: serving bundle, FastAPI endpoints, replay with blind/eval modes, provenance labels, 40 API/inference tests; see docs/API.md) | FastAPI with replay (blind/eval), provenance field, API tests | 4 d |
 | 9 | Frontend (done: six pages, provenance labels, replay lab, 19 frontend tests, checked in a browser at desktop and phone width; see web/README.md) | Dashboard, fleet, engine detail, simulation lab, model lab | 7–10 d |
 | 10 | Integration and quality (done: hostile-input hardening, live HTTP and full-stack tests, benchmark and optimisation, browser accessibility audit; see docs/TESTING.md and reports/performance.md) | End-to-end test, latency measurement, error handling | 3 d |
-| 11 | Deployment and write-up | Static snapshot demo, screenshots, case study, repo cleanup | 3–4 d |
+| 11 | Deployment and write-up (done locally: setup verified from a clean checkout, static recorded-playback demo with a GitHub Pages workflow, screenshots, README, case study and interview guide; not done: publishing the repository or the demo) | Static snapshot demo, screenshots, case study, repo cleanup | 3–4 d |
 
-Frontend work does not begin before Milestone 7 is approved. If time is short, Milestones 9–11 can shrink (fewer pages) without weakening 3–7.
-
-## Decisions needed from you at this gate
-
-1. Approve creating the repo at `C:\Users\mazen\Desktop\MY PROJECTS\sentinel` and running `git init` (no remote yet).
-2. Approve downloading `CMAPSSData.zip` (about 12 MB, from data.nasa.gov) into `data/raw`.
-3. Confirm: file-based registry first, LightGBM instead of XGBoost, SQLite deferred, Transformer optional.
+Frontend work did not begin before Milestone 7 was approved. Decisions taken at the first gate: file-based registry instead of MLflow, LightGBM instead of XGBoost, SQLite deferred, Transformer optional.

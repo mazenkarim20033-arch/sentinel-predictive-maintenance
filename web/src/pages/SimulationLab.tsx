@@ -17,7 +17,8 @@ export function SimulationLab() {
   const initial = Number(search.get("engine"));
   const [engineId, setEngineId] = useState(Number.isInteger(initial) && initial > 0 ? initial : 1);
   const [draft, setDraft] = useState(String(engineId));
-  const [mode, setMode] = useState<Mode>("blind");
+  const [mode, setMode] = useState<Mode>(search.get("mode") === "eval" ? "eval" : "blind");
+  const startCycle = Math.max(1, Math.floor(Number(search.get("cycle"))) || 1);
 
   const load = (e: FormEvent) => {
     e.preventDefault();
@@ -61,7 +62,7 @@ export function SimulationLab() {
         {engine.status === "error" && (
           <ErrorBox title={engine.error instanceof ApiError && engine.error.status === 404 ? `Engine ${engineId} is not in ${subset}` : "The engine could not be loaded"} error={engine.error} onRetry={engine.reload} />
         )}
-        {engine.status === "ready" && <Player key={`${subset}-${engineId}-${mode}`} subset={subset} engine={engine.data} mode={mode} />}
+        {engine.status === "ready" && <Player key={`${subset}-${engineId}-${mode}`} subset={subset} engine={engine.data} mode={mode} startCycle={startCycle} />}
       </div>
       <Margin>
         <p><strong>Why the replay is honest.</strong> Each step asks the server for the prediction at that cycle. The server cuts the history before running the model, so later measurements cannot leak in.</p>
@@ -73,10 +74,10 @@ export function SimulationLab() {
   );
 }
 
-function Player({ subset, engine, mode }: { subset: string; engine: Awaited<ReturnType<typeof api.engine>>; mode: Mode }) {
+function Player({ subset, engine, mode, startCycle }: { subset: string; engine: Awaited<ReturnType<typeof api.engine>>; mode: Mode; startCycle: number }) {
   const total = engine.observed_cycles;
   const names = Object.keys(engine.signals);
-  const [cycle, setCycle] = useState(1);
+  const [cycle, setCycle] = useState(Math.min(startCycle, total));
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
   const [chosen, setChosen] = useState(names.slice(0, 3));

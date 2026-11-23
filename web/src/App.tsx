@@ -1,4 +1,5 @@
 import { NavLink, Route, Routes } from "react-router-dom";
+import { IS_SNAPSHOT } from "./api/client";
 import { SubsetProvider, useSubset } from "./state/Subset";
 import { Dashboard } from "./pages/Dashboard";
 import { EngineDetail } from "./pages/EngineDetail";
@@ -11,7 +12,10 @@ function Shell() {
   const { subset, setSubset, subsets } = useSubset();
   return (
     <>
-      <section className="banner" aria-label="Data notice">Simulated NASA C-MAPSS data. A research demonstration, not for maintenance decisions.</section>
+      <section className="banner" aria-label="Data notice">
+        Simulated NASA C-MAPSS data. A research demonstration, not for maintenance decisions.
+        {IS_SNAPSHOT && " This public demo plays back recorded outputs of the real model; nothing is computed live."}
+      </section>
       <header className="topbar">
         <NavLink to="/" className="brand">SENTINEL<small>Remaining-life monitoring</small></NavLink>
         <nav className="nav" aria-label="Main">

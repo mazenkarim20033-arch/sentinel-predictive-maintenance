@@ -1,5 +1,7 @@
 # Research Plan
 
+> **Status at project end (plan versus what was done).** Done as planned: baselines, LightGBM, GRU and LSTM on FD001, per-regime normalisation, capped versus uncapped targets, window and feature ablations, cross-subset transfer, anomaly detectors with injected faults, quantile/CQR/conformal intervals, SHAP. **Not done:** the optional Transformer (nothing justified its cost), an autoencoder anomaly detector (the simple statistical detector already matched or beat Isolation Forest), GRU/LSTM on FD002-FD004 (stopped as a cost decision), hyperparameter search (all models use fixed defaults), MLflow and SQLite (a file-based registry was enough). Results are in `docs/EXPERIMENTS.md`; the generated `reports/REPORT.md` is the source of truth.
+
 ## Questions
 
 1. How much does each model family add over a constant and linear baseline on FD001, and does the ranking hold on FD002–FD004?

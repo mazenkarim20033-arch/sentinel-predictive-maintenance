@@ -53,7 +53,7 @@ def test_concurrent_requests_match_sequential_results(server):
 def test_simultaneous_cold_fleet_requests_agree(server):
     base, _ = server
     with ThreadPoolExecutor(max_workers=4) as pool:
-        bodies = list(pool.map(lambda _: httpx.get(f"{base}/fleet/FD003", params={"limit": 500}, timeout=120).json(), range(4)))
+        bodies = list(pool.map(lambda _: httpx.get(f"{base}/fleet/FD001", params={"limit": 500}, timeout=120).json(), range(4)))
     first = [(e["engine_id"], e["rul"], e["risk"]) for e in bodies[0]["engines"]]
     assert len(first) == 100 and all([(e["engine_id"], e["rul"], e["risk"]) for e in b["engines"]] == first for b in bodies)
 
