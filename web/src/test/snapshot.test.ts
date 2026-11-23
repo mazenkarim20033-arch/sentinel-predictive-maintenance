@@ -39,7 +39,7 @@ const FILES: Record<string, unknown> = {
 
 function stubFetch() {
   vi.stubGlobal("fetch", vi.fn(async (url: string) => {
-    const key = String(url).replace("/snapshot/", "");
+    const key = String(url).replace(/^.*snapshot\//, ""); // independent of the site's base path
     return key in FILES ? new Response(JSON.stringify(FILES[key]), { status: 200 }) : new Response("not found", { status: 404 });
   }));
 }
@@ -119,8 +119,8 @@ live("recorded demo equals the live API", () => {
     const real = globalThis.fetch;
     vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.startsWith("/snapshot/")) {
-        const p = resolve(SNAP, url.replace("/snapshot/", ""));
+      if (url.includes("snapshot/") && !url.startsWith("http")) {
+        const p = resolve(SNAP, url.replace(/^.*snapshot\//, ""));
         return Promise.resolve(existsSync(p) ? new Response(readFileSync(p, "utf8"), { status: 200 }) : new Response("nf", { status: 404 }));
       }
       return real(input, { ...init, signal: undefined });
