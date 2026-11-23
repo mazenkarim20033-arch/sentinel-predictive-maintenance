@@ -60,7 +60,7 @@ More screenshots: [engine page with explanation](docs/images/engine.png), [fleet
 
 ## Demo
 - **Run it locally** (below): the full app with the live API.
-- **Public static demo:** the app can also be built as a static site that plays back recorded outputs of the real model (no server, nothing computed live): `python scripts/export_snapshot.py` then `cd web && npm run build:demo`. A GitHub Pages workflow is included (`.github/workflows/pages.yml`); the demo has not been published yet. The recording is checked against the live API in `scripts/run_e2e.py`.
+- **Public static demo:** the app can also be built as a static site that plays back recorded outputs of the real model (no server, nothing computed live): `python scripts/export_snapshot.py` then `cd web && npm run build:demo`. **Live demo: https://mazenkarim20033-arch.github.io/sentinel-predictive-maintenance/** (FD001 and FD004), built and deployed by `.github/workflows/pages.yml` from the NASA data. The recording is checked against the live API in `scripts/run_e2e.py`.
 
 ## Installation
 Python 3.12 and Node 20 or newer. On Windows PowerShell use `npm.cmd` if script execution is disabled.
