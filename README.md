@@ -98,5 +98,8 @@ Simulated data only; no real machine. No hyperparameter tuning, and deep learnin
 ## Future work
 A real, larger run-to-failure dataset (for example bearings, which need a signal-feature step); tuned sequence models on the harder subsets; handling of machines that have not failed (censoring); temporal anomaly features so stuck sensors are detectable; explicit costs of a miss versus a false alarm before fixing warning thresholds.
 
+## Licence
+The code is released under the [MIT licence](LICENSE). The NASA data sets are not included and remain under their own terms; see the attribution below.
+
 ## Data attribution
 NASA C-MAPSS: A. Saxena, K. Goebel, D. Simon, N. Eklund, "Damage Propagation Modeling for Aircraft Engine Run-to-Failure Simulation", PHM08, 2008. NASA Prognostics Center of Excellence battery data set for the second-machine demonstration. No licence terms are stated by the source; the data are not included in this repository.
