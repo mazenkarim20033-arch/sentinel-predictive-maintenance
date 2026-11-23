@@ -25,6 +25,8 @@ FORMAT_VERSION = 1
 LEVELS = (0.8, 0.9)
 RISK_NAMES = ("normal", "warning", "critical")
 PERSISTENCE = 3
+MAX_SCORE = 1e12  # anomaly scores saturate here so extreme inputs cannot overflow to infinity
+MAX_ABS_INPUT = 1e9  # sensor values beyond this are rejected as not physically meaningful
 
 
 class BundleError(RuntimeError):
@@ -77,18 +79,22 @@ class ModelBundle:
         return cls(spec=spec, pre=pre, point=point, quantile_models=qmodels, detector=detector, anomaly_threshold=float(thr),
                    window=window, cap=cap, meta=meta)
 
-    def predict_history(self, frame: pd.DataFrame) -> pd.DataFrame:
-        """Predictions for every time step of ONE asset. Row i uses only rows <= i."""
+    def predict_history(self, frame: pd.DataFrame, tail: int | None = None) -> pd.DataFrame:
+        """Predictions for every time step of ONE asset. Row i uses only rows <= i.
+        With `tail`, only the last `tail` rows are computed (identical values, much cheaper for long histories)."""
         frame = self._validate(frame)
         z = self.pre.transform(frame)
         cols = self.pre.feature_cols
-        X = tabular_features(make_windows(z, cols, self.window), cols)
+        context = None if tail is None else max(1, tail) + PERSISTENCE - 1  # extra rows so persistent alerts see their full context
+        X = tabular_features(make_windows(z, cols, self.window, tail=context), cols)
+        z_used = z.iloc[len(z) - len(X):]
         pred = np.clip(self.point.predict(X), 0, self.cap)
-        out = pd.DataFrame({"time": z["time"].to_numpy(), "rul": pred})
+        out = pd.DataFrame({"time": z_used["time"].to_numpy(), "rul": pred})
         for level in LEVELS:
             lo_m, hi_m, q = self.quantile_models[level]
-            lo = np.minimum(lo_m.predict(X), hi_m.predict(X)) - q
-            hi = np.maximum(lo_m.predict(X), hi_m.predict(X)) + q
+            a, b = lo_m.predict(X), hi_m.predict(X)
+            lo = np.minimum(a, b) - q
+            hi = np.maximum(a, b) + q
             lo, hi = np.maximum(lo, 0), np.minimum(hi, self.cap)
             tag = int(level * 100)
             out[f"lo{tag}"], out[f"hi{tag}"] = lo, np.maximum(hi, lo)
@@ -96,24 +102,58 @@ class ModelBundle:
         warn = alert_state(pred, self.warn, PERSISTENCE)
         out["risk"] = np.where(crit, 2, np.where(warn, 1, 0))
         out["risk_instant"] = classify(pred, self.warn, self.crit)
-        scores = self.detector.score(z[cols].to_numpy())
+        with np.errstate(over="ignore", invalid="ignore"):
+            scores = self.detector.score(z_used[cols].to_numpy())
+        scores = np.nan_to_num(scores, nan=MAX_SCORE, posinf=MAX_SCORE, neginf=0.0).clip(0, MAX_SCORE)
         out["anomaly_score"] = scores
         out["anomaly_alert"] = alert_state(-scores, -self.anomaly_threshold, PERSISTENCE)
-        return out
+        return out.iloc[-tail:].reset_index(drop=True) if tail else out
 
-    def explain(self, frame: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray, float]:
-        """TreeSHAP attributions per signal for every step of ONE asset (row i uses rows <= i only).
-        Returns (signal contributions, raw model output before clipping, base value). Associations, not causes."""
+    def predict_last_many(self, frames: dict[int, pd.DataFrame]) -> pd.DataFrame:
+        """Last-cycle prediction for many assets in one batched model call (used for fleet views).
+        Equivalent to `predict_history(frame, tail=1)` per asset, but with one preprocessing and one model pass."""
+        parts = [self._validate(f).assign(asset=aid) for aid, f in frames.items()]
+        z = self.pre.transform(pd.concat(parts, ignore_index=True))
+        cols = self.pre.feature_cols
+        win = make_windows(z, cols, self.window, tail=PERSISTENCE)
+        X = tabular_features(win, cols)
+        pred = np.clip(self.point.predict(X), 0, self.cap)
+        out = pd.DataFrame({"asset": win.asset, "time": win.time, "rul": pred})
+        for level in LEVELS:
+            lo_m, hi_m, q = self.quantile_models[level]
+            a, b = lo_m.predict(X), hi_m.predict(X)
+            lo = np.maximum(np.minimum(a, b) - q, 0)
+            hi = np.minimum(np.maximum(a, b) + q, self.cap)
+            tag = int(level * 100)
+            out[f"lo{tag}"], out[f"hi{tag}"] = lo, np.maximum(hi, lo)
+        z_tail = z.sort_values(["asset", "time"]).groupby("asset", sort=True).tail(PERSISTENCE)  # same rows and order as the windows
+        with np.errstate(over="ignore", invalid="ignore"):
+            scores = self.detector.score(z_tail[cols].to_numpy())
+        scores = np.nan_to_num(scores, nan=MAX_SCORE, posinf=MAX_SCORE, neginf=0.0).clip(0, MAX_SCORE)
+        out["anomaly_score"] = scores
+        risk, instant, alert = np.zeros(len(out), int), np.zeros(len(out), int), np.zeros(len(out), bool)
+        for a in np.unique(win.asset):
+            idx = np.where(win.asset == a)[0]
+            crit, warn = alert_state(pred[idx], self.crit, PERSISTENCE), alert_state(pred[idx], self.warn, PERSISTENCE)
+            risk[idx] = np.where(crit, 2, np.where(warn, 1, 0))
+            instant[idx] = classify(pred[idx], self.warn, self.crit)
+            alert[idx] = alert_state(-scores[idx], -self.anomaly_threshold, PERSISTENCE)
+        out["risk"], out["risk_instant"], out["anomaly_alert"] = risk, instant, alert
+        return out.groupby("asset", sort=True).tail(1).reset_index(drop=True)
+
+    def explain(self, frame: pd.DataFrame, tail: int | None = None) -> tuple[pd.DataFrame, np.ndarray, float]:
+        """TreeSHAP attributions per signal for every step of ONE asset (row i uses rows <= i only); with `tail`, only the
+        last `tail` rows. Returns (signal contributions, raw model output before clipping, base value). Associations, not causes."""
         from sentinel.explain.shap_utils import aggregate_by_signal, lgbm_shap
 
         frame = self._validate(frame)
         z = self.pre.transform(frame)
         cols = self.pre.feature_cols
-        X = tabular_features(make_windows(z, cols, self.window), cols)
+        X = tabular_features(make_windows(z, cols, self.window, tail=tail), cols)
         values, base = lgbm_shap(self.point, X)
         agg, signals = aggregate_by_signal(values, list(X.columns))
         contrib = pd.DataFrame(agg, columns=signals)
-        contrib.insert(0, "time", z["time"].to_numpy())
+        contrib.insert(0, "time", z["time"].to_numpy()[len(z) - len(X):])
         return contrib, self.point.predict(X), base
 
     def _validate(self, frame: pd.DataFrame) -> pd.DataFrame:
@@ -129,6 +169,8 @@ class ModelBundle:
         values = frame[[c for c in self.spec.columns if c != "asset"]].to_numpy(dtype=float)
         if not np.isfinite(values).all():
             raise BundleError("history contains missing or non-finite values")
+        if (np.abs(values) > MAX_ABS_INPUT).any():
+            raise BundleError(f"history contains values beyond the supported range of +/-{MAX_ABS_INPUT:.0e}")
         if frame["time"].duplicated().any():
             raise BundleError("duplicate time steps")
         return frame

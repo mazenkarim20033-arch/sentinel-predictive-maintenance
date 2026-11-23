@@ -5,8 +5,8 @@ export const API_DOWN = "Cannot reach the SENTINEL API. Start it with: uvicorn s
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
-    super(message);
+  constructor(status: number, message: string, cause?: unknown) {
+    super(message, cause === undefined ? undefined : { cause });
     this.status = status;
   }
 }
@@ -23,7 +23,7 @@ async function request<T>(path: string, params?: Params, signal?: AbortSignal): 
     res = await fetch(`${BASE}${path}${query ? `?${query}` : ""}`, { signal });
   } catch (err) {
     if ((err as Error).name === "AbortError") throw err;
-    throw new ApiError(0, API_DOWN);
+    throw new ApiError(0, API_DOWN, err);
   }
   if (!res.ok) {
     let detail = `Request failed (${res.status})`;

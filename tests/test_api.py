@@ -123,6 +123,50 @@ def test_predict_validation_errors(client):
             assert r.status_code == 422, (name, ep, r.status_code, r.text[:200])
 
 
+@pytest.mark.parametrize("scale", [1e6, 1e12, 1e30, 1e200, 1e300])
+def test_extreme_magnitudes_never_cause_a_server_error(client, scale):
+    rows = [{**r, "s4": r["s4"] * scale} for r in history(25)]
+    for ep in ("rul", "risk", "anomaly"):
+        r = client.post(f"/predict/{ep}", json={"subset": "FDX", "history": rows})
+        assert r.status_code == (200 if scale <= 1e6 else 422), (scale, ep, r.status_code, r.text[:200])
+        if r.status_code == 200:
+            assert all(np.isfinite(v) for v in _numbers(r.json()))
+        else:
+            assert "supported range" in r.json()["detail"]
+
+
+def _numbers(obj):
+    if isinstance(obj, dict):
+        for v in obj.values():
+            yield from _numbers(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _numbers(v)
+    elif isinstance(obj, (int, float)) and not isinstance(obj, bool):
+        yield obj
+
+
+@pytest.mark.parametrize("content,headers", [
+    ('{"subset": "FDX", "history": [', {"Content-Type": "application/json"}),
+    ("", {"Content-Type": "application/json"}),
+    ('{"subset": "FDX", "history": [{"time": NaN}]}', {"Content-Type": "application/json"}),
+    ('{"subset": "FDX", "history": [{"time": Infinity, "s4": 1}]}', {"Content-Type": "application/json"}),
+    ("subset=FDX", {"Content-Type": "application/x-www-form-urlencoded"}),
+    ("[1, 2, 3]", {"Content-Type": "application/json"}),
+    ('{"subset": ["FDX"], "history": "nope"}', {"Content-Type": "application/json"}),
+])
+def test_malformed_requests_get_422_not_500(client, content, headers):
+    for ep in ("rul", "risk", "anomaly"):
+        assert client.post(f"/predict/{ep}", content=content, headers=headers).status_code == 422
+
+
+def test_unsupported_methods_and_unknown_paths(client):
+    assert client.get("/predict/rul").status_code == 405
+    assert client.post("/fleet/FDX").status_code == 405
+    assert client.delete("/engines/FDX/1").status_code == 405
+    assert client.get("/nope").status_code == 404
+
+
 def test_replay_blind_hides_truth_and_eval_shows_it(client, fleet_frame):
     blind = client.get("/replay/FDX/3", params={"cycle": 20}).json()
     assert blind["mode"] == "blind" and blind["ground_truth"] is None
@@ -162,7 +206,7 @@ def test_replay_matches_stateless_prediction_from_the_same_history(client, fleet
 def test_ground_truth_is_never_passed_to_the_model(bundle, fleet_frame, tmp_path, monkeypatch):
     seen = []
     original = bundle.predict_history
-    monkeypatch.setattr(bundle, "predict_history", lambda frame: (seen.append(list(frame.columns)), original(frame))[1])
+    monkeypatch.setattr(bundle, "predict_history", lambda frame, **kw: (seen.append(list(frame.columns)), original(frame, **kw))[1])
     c, _ = make_client(bundle, fleet_frame, tmp_path)
     c.get("/fleet/FDX")
     c.get("/engines/FDX/1", params={"include_truth": True})

@@ -19,15 +19,17 @@ def make_windows(
     window: int,
     target_col: str | None = None,
     last_only: bool = False,
+    tail: int | None = None,
 ) -> Windows:
-    """Causal windows: the window ending at time t uses rows with time <= t only."""
+    """Causal windows: the window ending at time t uses rows with time <= t only.
+    `tail` keeps only the windows ending at the last `tail` steps of each asset (same values as the full computation)."""
     if window < 1:
         raise ValueError("window must be >= 1")
     xs, masks, assets, steps, ys = [], [], [], [], []
     for asset, g in frame.sort_values(["asset", "time"]).groupby("asset", sort=True):
         feats = g[feature_cols].to_numpy(dtype=np.float32)
         n = len(g)
-        ends = np.array([n - 1]) if last_only else np.arange(n)
+        ends = np.array([n - 1]) if last_only else np.arange(max(0, n - tail) if tail else 0, n)
         idx = ends[:, None] - (window - 1) + np.arange(window)[None, :]
         masks.append(idx >= 0)
         xs.append(feats[np.clip(idx, 0, None)])

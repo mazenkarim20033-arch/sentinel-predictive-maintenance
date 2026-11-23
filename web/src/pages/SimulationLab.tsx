@@ -154,7 +154,7 @@ function Player({ subset, engine, mode }: { subset: string; engine: Awaited<Retu
               <Provenance kind="prediction" />{mode === "eval" && <Provenance kind="ground_truth" />}
             </div>
             <RulChart rows={rulRows(replay.history, truth, cycle)} showTruth={mode === "eval"} label="Predicted remaining life so far" />
-            <h3 style={{ marginTop: "1rem" }}>Warning timeline</h3>
+            <h2 style={{ marginTop: "1rem" }}>Warning timeline</h2>
             <RiskStrip risk={replay.history.risk} anomaly={replay.history.anomaly_alert} total={total} />
           </section>
 

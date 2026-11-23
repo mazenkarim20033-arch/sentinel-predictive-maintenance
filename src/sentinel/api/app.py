@@ -58,20 +58,22 @@ def create_app(services: Services | None = None, origins: list[str] | None = Non
             raise HTTPException(404, f"engine {engine_id} not found")
         return fleet.index[engine_id][fleet.spec.columns]  # ground truth is not a model input
 
-    def predict_or_422(bundle: ModelBundle, frame: pd.DataFrame) -> pd.DataFrame:
+    def predict_or_422(bundle: ModelBundle, frame: pd.DataFrame, tail: int | None = None) -> pd.DataFrame:
         try:
-            return bundle.predict_history(frame)
+            return bundle.predict_history(frame, tail=tail)
         except BundleError as exc:
             raise HTTPException(422, str(exc)) from exc
 
     def fleet_last(subset: str) -> pd.DataFrame:
         if subset not in fleet_cache:
             bundle, fleet = svc.bundle(subset), svc.fleet(subset)
-            rows = []
-            for eid, g in fleet.index.items():
-                last = predict_or_422(bundle, g[fleet.spec.columns]).iloc[-1]
-                rows.append({"engine_id": eid, "observed_cycles": int(g["time"].max()), **last.to_dict()})
-            fleet_cache[subset] = pd.DataFrame(rows)
+            try:
+                last = bundle.predict_last_many({eid: g[fleet.spec.columns] for eid, g in fleet.index.items()})
+            except BundleError as exc:
+                raise HTTPException(422, str(exc)) from exc
+            last.insert(0, "engine_id", last.pop("asset").astype(int))
+            last.insert(1, "observed_cycles", last["time"].astype(int))
+            fleet_cache[subset] = last
         return fleet_cache[subset]
 
     def history_frame(req: S.PredictRequest) -> tuple[ModelBundle, pd.DataFrame]:
@@ -132,21 +134,21 @@ def create_app(services: Services | None = None, origins: list[str] | None = Non
     @app.post("/predict/rul", response_model=S.RulResponse)
     def predict_rul(req: S.PredictRequest):
         bundle, df = history_frame(req)
-        row = predict_or_422(bundle, df).iloc[-1]
+        row = predict_or_422(bundle, df, tail=1).iloc[-1]
         return S.RulResponse(subset=req.subset, time=int(row["time"]), rul=float(row["rul"]), interval_80=_interval(row, 80),
                              interval_90=_interval(row, 90), rul_cap=bundle.cap, notes=[S.CAP_NOTE])
 
     @app.post("/predict/risk", response_model=S.RiskResponse)
     def predict_risk(req: S.PredictRequest):
         bundle, df = history_frame(req)
-        row = predict_or_422(bundle, df).iloc[-1]
+        row = predict_or_422(bundle, df, tail=1).iloc[-1]
         return S.RiskResponse(subset=req.subset, time=int(row["time"]), risk=RISK_NAMES[int(row["risk"])],
                               risk_instant=RISK_NAMES[int(row["risk_instant"])], rul=float(row["rul"]), notes=[S.RISK_NOTE])
 
     @app.post("/predict/anomaly", response_model=S.AnomalyResponse)
     def predict_anomaly(req: S.PredictRequest):
         bundle, df = history_frame(req)
-        row = predict_or_422(bundle, df).iloc[-1]
+        row = predict_or_422(bundle, df, tail=1).iloc[-1]
         return S.AnomalyResponse(subset=req.subset, time=int(row["time"]), anomaly_score=float(row["anomaly_score"]),
                                  anomaly_threshold=bundle.anomaly_threshold, anomaly_alert=bool(row["anomaly_alert"]),
                                  notes=["Statistical detector fitted on healthy-phase data; no accuracy is claimed on real anomalies."])
@@ -181,7 +183,7 @@ def create_app(services: Services | None = None, origins: list[str] | None = Non
             raise HTTPException(422, f"cycle {t} is beyond the {observed} observed cycles of engine {engine_id}")
         visible = inputs[inputs["time"] <= t]
         try:
-            contrib, raw, base = bundle.explain(visible)
+            contrib, raw, base = bundle.explain(visible, tail=1)
         except BundleError as exc:
             raise HTTPException(422, str(exc)) from exc
         row = contrib.iloc[-1]

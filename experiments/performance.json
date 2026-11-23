@@ -1,0 +1,164 @@
+{
+  "hardware": {
+    "processor": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
+    "logical_cpus": 2,
+    "ram_gb": 8.5,
+    "python": "3.12.9",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "server": "uvicorn, 1 worker, CPU only"
+  },
+  "startup_seconds_to_healthy": 7.24,
+  "server_rss_mb_idle": 191,
+  "cold_ms": {
+    "GET /fleet/FD001 (first call, computes every engine)": 1374.0,
+    "GET /fleet/FD004 (first call, computes every engine)": 3245.3
+  },
+  "server_rss_mb_after_fleet": 227,
+  "warm_sequential": {
+    "GET /health": {
+      "n": 30,
+      "p50_ms": 14.0,
+      "p95_ms": 16.1,
+      "max_ms": 17.4,
+      "mean_ms": 14.2
+    },
+    "GET /subsets": {
+      "n": 30,
+      "p50_ms": 14.5,
+      "p95_ms": 15.3,
+      "max_ms": 15.6,
+      "mean_ms": 14.2
+    },
+    "GET /fleet/FD001 (cached, 25 rows)": {
+      "n": 30,
+      "p50_ms": 5.8,
+      "p95_ms": 9.9,
+      "max_ms": 13.6,
+      "mean_ms": 6.4
+    },
+    "GET /engines/FD001/34 (203 cycles)": {
+      "n": 30,
+      "p50_ms": 73.2,
+      "p95_ms": 104.9,
+      "max_ms": 128.4,
+      "mean_ms": 77.1
+    },
+    "GET /replay cycle 10": {
+      "n": 30,
+      "p50_ms": 42.6,
+      "p95_ms": 44.8,
+      "max_ms": 47.0,
+      "mean_ms": 42.9
+    },
+    "GET /replay cycle 100": {
+      "n": 30,
+      "p50_ms": 55.4,
+      "p95_ms": 58.3,
+      "max_ms": 80.3,
+      "mean_ms": 56.5
+    },
+    "GET /replay cycle 200": {
+      "n": 30,
+      "p50_ms": 71.2,
+      "p95_ms": 76.7,
+      "max_ms": 100.0,
+      "mean_ms": 72.7
+    },
+    "GET /explain cycle 200": {
+      "n": 30,
+      "p50_ms": 37.9,
+      "p95_ms": 63.4,
+      "max_ms": 198.4,
+      "mean_ms": 44.4
+    },
+    "GET /evaluation/FD001": {
+      "n": 30,
+      "p50_ms": 23.2,
+      "p95_ms": 24.1,
+      "max_ms": 25.1,
+      "mean_ms": 23.2
+    },
+    "GET /models": {
+      "n": 30,
+      "p50_ms": 25.0,
+      "p95_ms": 27.6,
+      "max_ms": 51.8,
+      "mean_ms": 26.2
+    },
+    "POST /predict/rul 50 rows": {
+      "n": 30,
+      "p50_ms": 41.2,
+      "p95_ms": 43.5,
+      "max_ms": 43.8,
+      "mean_ms": 41.2
+    },
+    "POST /predict/rul 200 rows": {
+      "n": 30,
+      "p50_ms": 46.4,
+      "p95_ms": 51.5,
+      "max_ms": 78.4,
+      "mean_ms": 47.6
+    },
+    "POST /predict/rul 1000 rows (tiled stress input)": {
+      "n": 30,
+      "p50_ms": 75.9,
+      "p95_ms": 84.7,
+      "max_ms": 99.5,
+      "mean_ms": 77.0
+    },
+    "POST /predict/rul 3000 rows (tiled stress input, API maximum)": {
+      "n": 30,
+      "p50_ms": 157.0,
+      "p95_ms": 165.6,
+      "max_ms": 181.1,
+      "mean_ms": 158.1
+    }
+  },
+  "concurrent": {
+    "GET /replay cycle 100": {
+      "n": 200,
+      "p50_ms": 367.8,
+      "p95_ms": 481.1,
+      "max_ms": 522.6,
+      "mean_ms": 368.3,
+      "workers": 8,
+      "requests": 200,
+      "throughput_rps": 21.3
+    },
+    "POST /predict/rul 200 rows": {
+      "n": 200,
+      "p50_ms": 373.4,
+      "p95_ms": 463.5,
+      "max_ms": 495.2,
+      "mean_ms": 370.6,
+      "workers": 8,
+      "requests": 200,
+      "throughput_rps": 21.2
+    }
+  },
+  "server_rss_mb_after_load": 247,
+  "bundle_load_seconds": 0.09,
+  "model_in_process": {
+    "predict_history, 50 rows": {
+      "n": 20,
+      "p50_ms": 36.9,
+      "p95_ms": 38.9,
+      "max_ms": 38.9,
+      "mean_ms": 37.2
+    },
+    "predict_history, 200 rows": {
+      "n": 20,
+      "p50_ms": 58.1,
+      "p95_ms": 213.8,
+      "max_ms": 213.8,
+      "mean_ms": 67.3
+    },
+    "predict_history, 1000 rows": {
+      "n": 20,
+      "p50_ms": 167.5,
+      "p95_ms": 194.1,
+      "max_ms": 194.1,
+      "mean_ms": 170.4
+    }
+  }
+}

@@ -22,10 +22,11 @@ export function LifeScale({ engines, cap = MAX }: { engines: FleetEngine[]; cap?
       {sorted.map((e, i) => {
         const row = i % 4;
         const open = () => navigate(`/engines/${e.engine_id}`);
+        const name = `Engine ${e.engine_id}: about ${e.rul.toFixed(0)} cycles left (80% interval ${e.interval_80.lower.toFixed(0)} to ${e.interval_80.upper.toFixed(0)}), ${e.risk}`;
         return (
-          <g key={e.engine_id} className="tick" tabIndex={0} role="link" aria-label={`Engine ${e.engine_id}, ${e.rul.toFixed(0)} cycles left, ${e.risk}`}
+          <g key={e.engine_id} className="tick" tabIndex={0} role="link" aria-label={name}
             onClick={open} onKeyDown={(ev) => (ev.key === "Enter" || ev.key === " ") && open()}>
-            <title>{`Engine ${e.engine_id}: about ${e.rul.toFixed(0)} cycles left (80% interval ${e.interval_80.lower.toFixed(0)} to ${e.interval_80.upper.toFixed(0)}), ${e.risk}`}</title>
+            <title>{name}</title>
             <line x1={x(e.rul)} x2={x(e.rul)} y1={22 + row * 9} y2={50 + row * 9} stroke={STROKE[e.risk]} strokeWidth={2.2} />
           </g>
         );

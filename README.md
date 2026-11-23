@@ -12,7 +12,9 @@ Obtain it from the NASA open data catalog: https://data.nasa.gov/dataset/cmapss-
 
 Cards and results: [DATASET_CARD](docs/DATASET_CARD.md), [MODEL_CARD](docs/MODEL_CARD.md), [LIMITATIONS](docs/LIMITATIONS.md), [EXPERIMENTS](docs/EXPERIMENTS.md), and the generated [reports/REPORT.md](reports/REPORT.md) (rebuild with `python scripts/make_report.py`).
 
-Serving: `python scripts/build_bundle.py` then `uvicorn sentinel.api.app:app --port 8000`; endpoints, replay rules and error behaviour are in [docs/API.md](docs/API.md). The web app is in [web/](web/README.md): `cd web && npm install && npm run dev`.
+Serving: `python scripts/build_bundle.py` then `uvicorn sentinel.api.app:app --port 8000`; endpoints, replay rules and error behaviour are in [docs/API.md](docs/API.md). Testing, known gaps and the problems found during quality work: [docs/TESTING.md](docs/TESTING.md); measured API performance: [reports/performance.md](reports/performance.md).
+
+The web app is in [web/](web/README.md): `cd web && npm install && npm run dev`.
 
 ## Documents
 

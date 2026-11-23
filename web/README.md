@@ -6,7 +6,7 @@ React, TypeScript and Vite, with Recharts. It only talks to the SENTINEL API; no
 cd web
 npm install
 npm run dev          # http://localhost:5173, proxies /api to http://127.0.0.1:8000
-npm test             # vitest, 19 component and client tests (the API is mocked)
+npm test             # vitest: 28 component, client and accessibility tests (API mocked); 3 live tests skip unless VITE_API_BASE is set
 npm run build        # type-check and production build
 ```
 
